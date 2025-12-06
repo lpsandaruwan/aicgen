@@ -1,0 +1,60 @@
+{
+  "name": "aicgen",
+  "version": "0.1.0",
+  "description": "AI Config Generator - Automated AI assistant configuration for your projects",
+  "keywords": [
+    "ai",
+    "cli",
+    "code-generator",
+    "claude",
+    "config",
+    "assistant"
+  ],
+  "author": "",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/aicgen.git"
+  },
+  "bin": {
+    "aicgen": "./dist/index.js"
+  },
+  "type": "module",
+  "engines": {
+    "bun": ">=1.0.0"
+  },
+  "scripts": {
+    "build": "bun build src/index.ts --outdir dist --target node",
+    "build:binary": "bun build src/index.ts --compile --outfile aicgen",
+    "build:binary:windows": "bun build src/index.ts --compile --outfile aicgen.exe",
+    "build:binary:linux": "bun build src/index.ts --compile --outfile aicgen-linux --target=bun-linux-x64",
+    "build:binary:macos": "bun build src/index.ts --compile --outfile aicgen-macos --target=bun-darwin-arm64",
+    "build:all": "bun run build:binary:windows && bun run build:binary:linux && bun run build:binary:macos",
+    "dev": "bun --watch src/index.ts",
+    "start": "bun src/index.ts",
+    "test": "bun test",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src --ext .ts",
+    "format": "prettier --write src"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.30.1",
+    "@inquirer/prompts": "^6.0.1",
+    "chalk": "^5.3.0",
+    "commander": "^12.1.0",
+    "debug": "^4.3.7",
+    "gray-matter": "^4.0.3",
+    "ora": "^8.1.1",
+    "yaml": "^2.6.1"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.1.13",
+    "@types/debug": "^4.1.12",
+    "@types/node": "^20.17.9",
+    "@typescript-eslint/eslint-plugin": "^6.21.0",
+    "@typescript-eslint/parser": "^6.21.0",
+    "eslint": "^8.57.1",
+    "prettier": "^3.4.2",
+    "typescript": "^5.7.2"
+  }
+}
