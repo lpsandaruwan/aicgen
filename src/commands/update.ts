@@ -88,6 +88,7 @@ export async function updateCommand(options: { force?: boolean } = {}) {
 
     console.log(chalk.green('\n✅ Guidelines updated successfully!'));
     console.log(chalk.gray(`   Location: ${cacheDir}`));
+    console.log(chalk.cyan(`\n   ℹ️  Your custom guidelines are safe (stored separately in ~/.aicgen/data/)`));
     console.log(chalk.gray(`\n   Run ${chalk.white('aicgen init')} to use the latest guidelines`));
 
   } catch (error) {

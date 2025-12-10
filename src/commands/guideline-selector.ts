@@ -65,7 +65,8 @@ export async function selectGuidelines(
   let selected = await checkbox({
     message: 'Select guidelines to include (Space to toggle, Enter to confirm):',
     choices,
-    pageSize: 25
+    pageSize: 25,
+    loop: false
   }) as string[];
 
   // Handle back selection

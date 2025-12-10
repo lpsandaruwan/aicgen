@@ -48,6 +48,13 @@ export class GuidelineLoader {
     return this.version;
   }
 
+  getAllGuidelines(): Array<{ id: string; mapping: GuidelineMapping }> {
+    return Object.entries(this.mappings).map(([id, mapping]) => ({
+      id,
+      mapping
+    }));
+  }
+
   getGuidelinesForProfile(
     _assistant: AIAssistant,
     language: Language,

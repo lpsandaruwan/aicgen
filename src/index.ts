@@ -4,6 +4,9 @@ import { initCommand } from './commands/init.js';
 import { statsCommand } from './commands/stats.js';
 import { updateCommand } from './commands/update.js';
 import { addGuidelineCommand } from './commands/add-guideline.js';
+import { removeGuidelineCommand } from './commands/remove-guideline.js';
+import { quickAddCommand } from './commands/quick-add.js';
+import { clearCommand } from './commands/clear.js';
 import { showBanner } from './utils/banner.js';
 import { CONFIG } from './config.js';
 
@@ -44,5 +47,21 @@ program
   .command('add-guideline')
   .description('Add a custom guideline interactively')
   .action(addGuidelineCommand);
+
+program
+  .command('remove-guideline')
+  .description('Remove custom guidelines')
+  .action(removeGuidelineCommand);
+
+program
+  .command('quick-add')
+  .description('Quickly add guidelines to existing configuration')
+  .action(quickAddCommand);
+
+program
+  .command('clear')
+  .description('Remove all AI configurations from the project')
+  .option('-f, --force', 'Skip confirmation prompt')
+  .action(clearCommand);
 
 program.parse();

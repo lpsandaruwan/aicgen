@@ -10,6 +10,7 @@ import { WizardStateManager, BACK_VALUE, addBackOption } from '../utils/wizard-s
 import { createSummaryBox, createMetricsBox } from '../utils/formatting.js';
 import { selectGuidelines } from './guideline-selector.js';
 import { CONFIG, GITHUB_RELEASES_URL } from '../config.js';
+import { ensureDataInitialized } from '../services/first-run-init.js';
 
 interface InitOptions {
   assistant?: string;
@@ -61,6 +62,9 @@ export async function initCommand(options: InitOptions) {
   showBanner();
   showInstructions();
 
+  // First-run initialization
+  await ensureDataInitialized();
+
   // Check for guideline updates (non-blocking)
   checkForUpdatesInBackground();
 
@@ -90,13 +94,26 @@ export async function initCommand(options: InitOptions) {
     // Check for existing config
     if (detected.hasExistingConfig && !options.force) {
       console.log(chalk.yellow('\n⚠️  Existing AI config detected'));
-      const shouldContinue = await confirm({
-        message: 'Overwrite existing configuration?',
-        default: false
+
+      const action = await select({
+        message: 'How would you like to proceed?',
+        choices: [
+          { value: 'overwrite', name: 'Overwrite existing config', description: 'Keep other AI configs, replace matching ones' },
+          { value: 'clear', name: 'Clear all configs first', description: 'Remove all AI configs, then generate new' },
+          { value: 'cancel', name: 'Cancel', description: 'Exit without making changes' }
+        ]
       });
-      if (!shouldContinue) {
+
+      if (action === 'cancel') {
         console.log(chalk.gray('\nCancelled.'));
         return;
+      }
+
+      if (action === 'clear') {
+        // Import and run clear command logic
+        const { clearCommand } = await import('./clear.js');
+        await clearCommand({ force: true });
+        console.log(''); // Add spacing
       }
     }
 
@@ -423,7 +440,8 @@ async function handleSummaryStep(wizard: WizardStateManager): Promise<boolean | 
     { label: 'Language', value: state.language! },
     { label: 'Project Type', value: state.projectType! },
     { label: 'Architecture', value: state.architecture! },
-    { label: 'Level', value: state.level! }
+    { label: 'Level', value: state.level! },
+    { label: 'Setup Type', value: state.setupType || 'standard' }
   ]));
 
   console.log('\n' + createMetricsBox([
@@ -432,6 +450,19 @@ async function handleSummaryStep(wizard: WizardStateManager): Promise<boolean | 
     { label: 'sub-agents', value: metrics.subAgentsCount },
     { label: 'estimated size', value: metrics.estimatedSize }
   ]));
+
+  // Show selected guidelines if in custom mode
+  if (state.setupType === 'custom' && state.selectedGuidelineIds && state.selectedGuidelineIds.length > 0) {
+    console.log(chalk.cyan('\n📚 Selected Guidelines:'));
+    const guidelineNames = state.selectedGuidelineIds.map(id => {
+      const mapping = (loader as any).mappings[id];
+      return mapping ? `   • ${mapping.category || 'General'}: ${id}` : `   • ${id}`;
+    });
+    console.log(guidelineNames.slice(0, 10).join('\n'));
+    if (guidelineNames.length > 10) {
+      console.log(chalk.gray(`   ... and ${guidelineNames.length - 10} more`));
+    }
+  }
 
   console.log('');
 

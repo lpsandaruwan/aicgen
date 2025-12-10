@@ -253,7 +253,7 @@ export async function addGuidelineCommand() {
     }
 
     mappings[id] = {
-      path: `guidelines/${relativePath}`,
+      path: relativePath,
       category,
       ...(languages.length > 0 && { languages }),
       levels,
