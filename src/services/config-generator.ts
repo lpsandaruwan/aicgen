@@ -8,6 +8,7 @@ import { ProfileSelection } from '../models/profile.js';
 export interface GenerationOptions {
   projectPath: string;
   selection: ProfileSelection;
+  customGuidelineIds?: string[];
   dryRun?: boolean;
 }
 
@@ -21,9 +22,15 @@ export class ConfigGenerator {
   private guidelineLoader: GuidelineLoader;
   private fileWriter: AssistantFileWriter;
 
-  constructor() {
-    this.guidelineLoader = new GuidelineLoader();
-    this.fileWriter = new AssistantFileWriter();
+  static async create(): Promise<ConfigGenerator> {
+    const guidelineLoader = await GuidelineLoader.create();
+    const fileWriter = await AssistantFileWriter.create();
+    return new ConfigGenerator(guidelineLoader, fileWriter);
+  }
+
+  private constructor(guidelineLoader: GuidelineLoader, fileWriter: AssistantFileWriter) {
+    this.guidelineLoader = guidelineLoader;
+    this.fileWriter = fileWriter;
   }
 
   async detectProject(projectPath: string): Promise<DetectedProject> {
@@ -39,16 +46,20 @@ export class ConfigGenerator {
     const filesGenerated: string[] = [];
 
     try {
-      const assembledContent = this.guidelineLoader.assembleProfile(
+      const guidelineIds = options.customGuidelineIds || this.guidelineLoader.getGuidelinesForProfile(
         options.selection.assistant,
         options.selection.language,
         options.selection.level,
         options.selection.architecture
       );
 
-      const files = this.fileWriter.generateFiles(
+      if (guidelineIds.length === 0) {
+        throw new Error(`No guidelines found for profile: ${options.selection.assistant}-${options.selection.language}-${options.selection.level}-${options.selection.architecture}`);
+      }
+
+      const files = await this.fileWriter.generateFiles(
         options.selection.assistant,
-        assembledContent,
+        guidelineIds,
         options.selection,
         options.projectPath
       );

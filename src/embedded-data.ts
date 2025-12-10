@@ -4,6 +4,7 @@
 
 export interface GuidelineMapping {
   path: string;
+  category?: string;
   languages?: string[];
   levels?: string[];
   architectures?: string[];
@@ -32,7 +33,8 @@ export const EMBEDDED_DATA: EmbeddedData = {
         "typescript",
         "fundamentals",
         "types"
-      ]
+      ],
+      "category": "Language"
     },
     "typescript-async": {
       "path": "language/typescript/async.md",
@@ -49,7 +51,8 @@ export const EMBEDDED_DATA: EmbeddedData = {
         "typescript",
         "async",
         "promises"
-      ]
+      ],
+      "category": "Language"
     },
     "typescript-interfaces-types": {
       "path": "language/typescript/interfaces-types.md",
@@ -66,7 +69,8 @@ export const EMBEDDED_DATA: EmbeddedData = {
         "interfaces",
         "types",
         "utility-types"
-      ]
+      ],
+      "category": "Language"
     },
     "typescript-generics": {
       "path": "language/typescript/generics.md",
@@ -81,7 +85,8 @@ export const EMBEDDED_DATA: EmbeddedData = {
         "typescript",
         "generics",
         "advanced"
-      ]
+      ],
+      "category": "Language"
     },
     "typescript-error-handling": {
       "path": "language/typescript/error-handling.md",
@@ -97,7 +102,8 @@ export const EMBEDDED_DATA: EmbeddedData = {
         "typescript",
         "errors",
         "exceptions"
-      ]
+      ],
+      "category": "Language"
     },
     "typescript-testing": {
       "path": "language/typescript/testing.md",
@@ -113,7 +119,8 @@ export const EMBEDDED_DATA: EmbeddedData = {
         "typescript",
         "testing",
         "jest"
-      ]
+      ],
+      "category": "Language"
     },
     "typescript-config": {
       "path": "language/typescript/config.md",
@@ -129,7 +136,8 @@ export const EMBEDDED_DATA: EmbeddedData = {
         "typescript",
         "tsconfig",
         "configuration"
-      ]
+      ],
+      "category": "Language"
     },
     "typescript-performance": {
       "path": "language/typescript/performance.md",
@@ -144,7 +152,8 @@ export const EMBEDDED_DATA: EmbeddedData = {
         "typescript",
         "performance",
         "optimization"
-      ]
+      ],
+      "category": "Language"
     },
     "python-basics": {
       "path": "language/python/basics.md",
@@ -161,7 +170,8 @@ export const EMBEDDED_DATA: EmbeddedData = {
         "python",
         "fundamentals",
         "pep8"
-      ]
+      ],
+      "category": "Language"
     },
     "python-types": {
       "path": "language/python/types.md",
@@ -178,7 +188,8 @@ export const EMBEDDED_DATA: EmbeddedData = {
         "types",
         "type-hints",
         "mypy"
-      ]
+      ],
+      "category": "Language"
     },
     "python-async": {
       "path": "language/python/async.md",
@@ -193,7 +204,8 @@ export const EMBEDDED_DATA: EmbeddedData = {
         "python",
         "async",
         "asyncio"
-      ]
+      ],
+      "category": "Language"
     },
     "python-testing": {
       "path": "language/python/testing.md",
@@ -209,7 +221,8 @@ export const EMBEDDED_DATA: EmbeddedData = {
         "python",
         "testing",
         "pytest"
-      ]
+      ],
+      "category": "Language"
     },
     "microservices-boundaries": {
       "path": "architecture/microservices/boundaries.md",
@@ -225,7 +238,8 @@ export const EMBEDDED_DATA: EmbeddedData = {
         "microservices",
         "boundaries",
         "ddd"
-      ]
+      ],
+      "category": "Architecture"
     },
     "microservices-communication": {
       "path": "architecture/microservices/communication.md",
@@ -242,7 +256,8 @@ export const EMBEDDED_DATA: EmbeddedData = {
         "communication",
         "messaging",
         "events"
-      ]
+      ],
+      "category": "Architecture"
     },
     "microservices-data": {
       "path": "architecture/microservices/data.md",
@@ -259,7 +274,8 @@ export const EMBEDDED_DATA: EmbeddedData = {
         "data",
         "consistency",
         "saga"
-      ]
+      ],
+      "category": "Architecture"
     },
     "microservices-resilience": {
       "path": "architecture/microservices/resilience.md",
@@ -275,7 +291,8 @@ export const EMBEDDED_DATA: EmbeddedData = {
         "resilience",
         "circuit-breaker",
         "retry"
-      ]
+      ],
+      "category": "Architecture"
     },
     "modular-monolith-structure": {
       "path": "architecture/modular-monolith/structure.md",
@@ -291,7 +308,8 @@ export const EMBEDDED_DATA: EmbeddedData = {
         "modular-monolith",
         "structure",
         "modules"
-      ]
+      ],
+      "category": "Architecture"
     },
     "modular-monolith-boundaries": {
       "path": "architecture/modular-monolith/boundaries.md",
@@ -308,7 +326,8 @@ export const EMBEDDED_DATA: EmbeddedData = {
         "boundaries",
         "coupling",
         "events"
-      ]
+      ],
+      "category": "Architecture"
     },
     "testing-unit-fundamentals": {
       "path": "testing/unit-fundamentals.md",
@@ -321,7 +340,8 @@ export const EMBEDDED_DATA: EmbeddedData = {
         "testing",
         "unit-tests",
         "aaa-pattern"
-      ]
+      ],
+      "category": "Testing"
     },
     "testing-unit-mocking": {
       "path": "testing/unit-mocking.md",
@@ -335,7 +355,8 @@ export const EMBEDDED_DATA: EmbeddedData = {
         "mocking",
         "test-doubles",
         "stubs"
-      ]
+      ],
+      "category": "Testing"
     },
     "testing-integration": {
       "path": "testing/integration.md",
@@ -348,7 +369,8 @@ export const EMBEDDED_DATA: EmbeddedData = {
         "integration",
         "database",
         "api"
-      ]
+      ],
+      "category": "Testing"
     },
     "security-injection": {
       "path": "security/injection.md",
@@ -363,7 +385,8 @@ export const EMBEDDED_DATA: EmbeddedData = {
         "owasp",
         "sql-injection",
         "xss"
-      ]
+      ],
+      "category": "Security"
     },
     "security-auth-jwt": {
       "path": "security/auth-jwt.md",
@@ -378,7 +401,8 @@ export const EMBEDDED_DATA: EmbeddedData = {
         "jwt",
         "session",
         "password"
-      ]
+      ],
+      "category": "Security"
     },
     "security-secrets": {
       "path": "security/secrets.md",
@@ -392,7 +416,8 @@ export const EMBEDDED_DATA: EmbeddedData = {
         "secrets",
         "env",
         "configuration"
-      ]
+      ],
+      "category": "Security"
     },
     "security-headers": {
       "path": "security/headers.md",
@@ -406,7 +431,8 @@ export const EMBEDDED_DATA: EmbeddedData = {
         "cors",
         "csp",
         "https"
-      ]
+      ],
+      "category": "Security"
     },
     "performance-caching": {
       "path": "performance/caching.md",
@@ -419,7 +445,8 @@ export const EMBEDDED_DATA: EmbeddedData = {
         "caching",
         "redis",
         "memoization"
-      ]
+      ],
+      "category": "Performance"
     },
     "performance-async": {
       "path": "performance/async.md",
@@ -433,7 +460,8 @@ export const EMBEDDED_DATA: EmbeddedData = {
         "async",
         "parallel",
         "batching"
-      ]
+      ],
+      "category": "Performance"
     },
     "database-schema": {
       "path": "database/schema.md",
@@ -447,7 +475,8 @@ export const EMBEDDED_DATA: EmbeddedData = {
         "schema",
         "design",
         "normalization"
-      ]
+      ],
+      "category": "Database"
     },
     "database-indexing": {
       "path": "database/indexing.md",
@@ -460,7 +489,8 @@ export const EMBEDDED_DATA: EmbeddedData = {
         "indexing",
         "performance",
         "queries"
-      ]
+      ],
+      "category": "Database"
     },
     "api-rest": {
       "path": "api/rest.md",
@@ -474,7 +504,8 @@ export const EMBEDDED_DATA: EmbeddedData = {
         "rest",
         "http",
         "design"
-      ]
+      ],
+      "category": "API Design"
     },
     "api-pagination": {
       "path": "api/pagination.md",
@@ -488,7 +519,8 @@ export const EMBEDDED_DATA: EmbeddedData = {
         "pagination",
         "cursor",
         "offset"
-      ]
+      ],
+      "category": "API Design"
     },
     "code-style-naming": {
       "path": "style/naming.md",
@@ -502,7 +534,8 @@ export const EMBEDDED_DATA: EmbeddedData = {
         "style",
         "naming",
         "conventions"
-      ]
+      ],
+      "category": "Code Style"
     },
     "code-style-organization": {
       "path": "style/organization.md",
@@ -516,7 +549,8 @@ export const EMBEDDED_DATA: EmbeddedData = {
         "organization",
         "structure",
         "srp"
-      ]
+      ],
+      "category": "Code Style"
     },
     "error-handling-strategy": {
       "path": "error-handling/strategy.md",
@@ -530,7 +564,8 @@ export const EMBEDDED_DATA: EmbeddedData = {
         "exceptions",
         "resilience",
         "retry"
-      ]
+      ],
+      "category": "Error Handling"
     },
     "solid-principles": {
       "path": "architecture/solid/principles.md",
@@ -547,7 +582,8 @@ export const EMBEDDED_DATA: EmbeddedData = {
         "isp",
         "dip",
         "design-principles"
-      ]
+      ],
+      "category": "Architecture"
     },
     "clean-architecture-layers": {
       "path": "architecture/clean-architecture/layers.md",
@@ -564,7 +600,8 @@ export const EMBEDDED_DATA: EmbeddedData = {
         "layers",
         "dependency-rule",
         "use-cases"
-      ]
+      ],
+      "category": "Architecture"
     },
     "ddd-tactical": {
       "path": "architecture/ddd/tactical.md",
@@ -582,7 +619,8 @@ export const EMBEDDED_DATA: EmbeddedData = {
         "value-objects",
         "aggregates",
         "domain-events"
-      ]
+      ],
+      "category": "Architecture"
     },
     "ddd-strategic": {
       "path": "architecture/ddd/strategic.md",
@@ -598,7 +636,8 @@ export const EMBEDDED_DATA: EmbeddedData = {
         "bounded-context",
         "ubiquitous-language",
         "context-mapping"
-      ]
+      ],
+      "category": "Architecture"
     },
     "event-driven-patterns": {
       "path": "architecture/event-driven/patterns.md",
@@ -614,7 +653,8 @@ export const EMBEDDED_DATA: EmbeddedData = {
         "cqrs",
         "saga",
         "event-driven"
-      ]
+      ],
+      "category": "Architecture"
     },
     "layered-architecture": {
       "path": "architecture/layered/layers.md",
@@ -631,7 +671,8 @@ export const EMBEDDED_DATA: EmbeddedData = {
         "presentation",
         "domain",
         "data-access"
-      ]
+      ],
+      "category": "Architecture"
     },
     "serverless-patterns": {
       "path": "architecture/serverless/patterns.md",
@@ -648,7 +689,8 @@ export const EMBEDDED_DATA: EmbeddedData = {
         "faas",
         "lambda",
         "cold-start"
-      ]
+      ],
+      "category": "Architecture"
     },
     "gui-architecture": {
       "path": "architecture/gui/patterns.md",
@@ -663,7 +705,8 @@ export const EMBEDDED_DATA: EmbeddedData = {
         "mvp",
         "mvvm",
         "component-architecture"
-      ]
+      ],
+      "category": "Architecture"
     },
     "feature-toggles": {
       "path": "architecture/feature-toggles/patterns.md",
@@ -676,7 +719,8 @@ export const EMBEDDED_DATA: EmbeddedData = {
         "feature-flags",
         "release-toggles",
         "ab-testing"
-      ]
+      ],
+      "category": "Architecture"
     },
     "devops-ci-cd": {
       "path": "devops/ci-cd.md",
@@ -691,7 +735,8 @@ export const EMBEDDED_DATA: EmbeddedData = {
         "cd",
         "deployment",
         "pipelines"
-      ]
+      ],
+      "category": "DevOps"
     },
     "devops-practices": {
       "path": "devops/practices.md",
@@ -704,7 +749,8 @@ export const EMBEDDED_DATA: EmbeddedData = {
         "infrastructure",
         "observability",
         "containers"
-      ]
+      ],
+      "category": "DevOps"
     },
     "practices-code-review": {
       "path": "practices/code-review.md",
@@ -718,7 +764,8 @@ export const EMBEDDED_DATA: EmbeddedData = {
         "pr",
         "feedback",
         "collaboration"
-      ]
+      ],
+      "category": "Best Practices"
     },
     "practices-refactoring": {
       "path": "practices/refactoring.md",
@@ -731,7 +778,8 @@ export const EMBEDDED_DATA: EmbeddedData = {
         "refactoring",
         "code-smells",
         "clean-code"
-      ]
+      ],
+      "category": "Best Practices"
     },
     "practices-version-control": {
       "path": "practices/version-control.md",
@@ -746,7 +794,8 @@ export const EMBEDDED_DATA: EmbeddedData = {
         "branching",
         "commits",
         "version-control"
-      ]
+      ],
+      "category": "Best Practices"
     },
     "api-versioning": {
       "path": "api/versioning.md",
@@ -760,7 +809,8 @@ export const EMBEDDED_DATA: EmbeddedData = {
         "versioning",
         "deprecation",
         "backwards-compatibility"
-      ]
+      ],
+      "category": "API Design"
     },
     "performance-caching-strategies": {
       "path": "performance/caching-strategies.md",
@@ -773,7 +823,8 @@ export const EMBEDDED_DATA: EmbeddedData = {
         "cache-aside",
         "write-through",
         "invalidation"
-      ]
+      ],
+      "category": "Performance"
     },
     "database-design-patterns": {
       "path": "database/design-patterns.md",
@@ -787,7 +838,8 @@ export const EMBEDDED_DATA: EmbeddedData = {
         "normalization",
         "denormalization",
         "soft-deletes"
-      ]
+      ],
+      "category": "Database"
     },
     "patterns-base": {
       "path": "patterns/base-patterns.md",
@@ -802,7 +854,8 @@ export const EMBEDDED_DATA: EmbeddedData = {
         "special-case",
         "registry",
         "plugin"
-      ]
+      ],
+      "category": "Design Patterns"
     },
     "patterns-concurrency": {
       "path": "patterns/concurrency.md",
@@ -815,7 +868,8 @@ export const EMBEDDED_DATA: EmbeddedData = {
         "optimistic-lock",
         "pessimistic-lock",
         "locking"
-      ]
+      ],
+      "category": "Design Patterns"
     },
     "patterns-data-access": {
       "path": "patterns/data-access.md",
@@ -829,7 +883,8 @@ export const EMBEDDED_DATA: EmbeddedData = {
         "data-mapper",
         "active-record",
         "unit-of-work"
-      ]
+      ],
+      "category": "Design Patterns"
     },
     "patterns-distribution": {
       "path": "patterns/distribution.md",
@@ -842,7 +897,8 @@ export const EMBEDDED_DATA: EmbeddedData = {
         "dto",
         "gateway",
         "service-stub"
-      ]
+      ],
+      "category": "Design Patterns"
     },
     "patterns-domain-logic": {
       "path": "patterns/domain-logic.md",
@@ -855,7 +911,8 @@ export const EMBEDDED_DATA: EmbeddedData = {
         "transaction-script",
         "domain-model",
         "service-layer"
-      ]
+      ],
+      "category": "Design Patterns"
     },
     "patterns-gof": {
       "path": "patterns/gof.md",
@@ -870,7 +927,8 @@ export const EMBEDDED_DATA: EmbeddedData = {
         "strategy",
         "observer",
         "decorator"
-      ]
+      ],
+      "category": "Design Patterns"
     }
   },
   "guidelines": {
@@ -950,6 +1008,9 @@ export const EMBEDDED_DATA: EmbeddedData = {
     "style/index.md": "# Code Style Guidelines\n\nThis directory contains coding style and organization patterns.\n\n## Available Chunks\n\n- **naming.md** - Variables, constants, classes, files, avoiding magic numbers\n- **organization.md** - Function length, nesting depth, file structure, SRP\n",
     "style/naming.md": "# Naming Conventions\n\n## Variables and Functions\n\n```typescript\n// camelCase for variables and functions\nconst userName = 'John';\nconst isActive = true;\nconst itemCount = 42;\n\nfunction calculateTotal(items: Item[]): number {\n  return items.reduce((sum, item) => sum + item.price, 0);\n}\n\n// Boolean variables: use is/has/can/should prefix\nconst isValid = validate(input);\nconst hasPermission = checkPermission(user);\nconst canEdit = user.role === 'admin';\nconst shouldRetry = error.code === 'TIMEOUT';\n\n// Collections: use plural names\nconst users = getUsers();\nconst activeOrders = orders.filter(o => o.status === 'active');\n```\n\n## Constants\n\n```typescript\n// UPPER_SNAKE_CASE for constants\nconst MAX_RETRY_ATTEMPTS = 3;\nconst DEFAULT_TIMEOUT_MS = 5000;\nconst API_BASE_URL = 'https://api.example.com';\n\n// Enum-like objects\nconst ORDER_STATUS = {\n  PENDING: 'pending',\n  PROCESSING: 'processing',\n  SHIPPED: 'shipped',\n  DELIVERED: 'delivered',\n  CANCELLED: 'cancelled'\n} as const;\n\nconst HTTP_STATUS = {\n  OK: 200,\n  CREATED: 201,\n  BAD_REQUEST: 400,\n  NOT_FOUND: 404\n} as const;\n```\n\n## Classes and Types\n\n```typescript\n// PascalCase for classes and types\nclass UserService {\n  constructor(private userRepository: UserRepository) {}\n}\n\ninterface User {\n  id: string;\n  name: string;\n  email: string;\n}\n\ntype UserRole = 'admin' | 'editor' | 'viewer';\n\n// Avoid prefixes\n// ❌ IUser, CUser, TUser\n// ✅ User\n```\n\n## Files and Modules\n\n```typescript\n// kebab-case for files\nuser-service.ts\norder-repository.ts\ncreate-user.dto.ts\n\n// Match file name to primary export\n// user-service.ts exports UserService\n// order-repository.ts exports OrderRepository\n```\n\n## Avoid Bad Names\n\n```typescript\n// ❌ Bad - unclear\nconst d = Date.now();\nconst tmp = user.name;\nconst data = fetchData();\nconst flag = true;\n\n// ✅ Good - descriptive\nconst currentDate = Date.now();\nconst originalUserName = user.name;\nconst customerOrders = fetchCustomerOrders();\nconst isEmailVerified = true;\n```\n\n## Avoid Magic Numbers\n\n```typescript\n// ❌ Magic numbers\nif (user.age >= 18) { ... }\nif (items.length > 100) { ... }\nsetTimeout(callback, 5000);\n\n// ✅ Named constants\nconst LEGAL_AGE = 18;\nconst MAX_BATCH_SIZE = 100;\nconst DEFAULT_TIMEOUT_MS = 5000;\n\nif (user.age >= LEGAL_AGE) { ... }\nif (items.length > MAX_BATCH_SIZE) { ... }\nsetTimeout(callback, DEFAULT_TIMEOUT_MS);\n```\n\n## Consistency\n\n```typescript\n// Pick ONE style and stick with it across the project\n\n// ✅ Consistent camelCase in APIs\n{\n  \"userId\": 123,\n  \"firstName\": \"John\",\n  \"createdAt\": \"2024-01-01\"\n}\n\n// ❌ Mixed styles\n{\n  \"user_id\": 123,      // snake_case\n  \"firstName\": \"John\", // camelCase - inconsistent!\n}\n```\n",
     "style/organization.md": "# Code Organization\n\n## Function Length\n\n```typescript\n// ❌ Function too long (>50 lines)\nfunction processOrder(orderId: string) {\n  // 200 lines of validation, payment, inventory, shipping...\n}\n\n// ✅ Extract into smaller, focused functions\nfunction processOrder(orderId: string) {\n  const order = fetchOrder(orderId);\n\n  validateOrder(order);\n  reserveInventory(order.items);\n  processPayment(order);\n  scheduleShipping(order);\n  sendConfirmation(order.customer.email);\n\n  return order;\n}\n```\n\n## Nesting Depth\n\n```typescript\n// ❌ Too much nesting (>3 levels)\nif (user) {\n  if (user.isActive) {\n    if (user.hasPermission('edit')) {\n      if (resource.isAvailable) {\n        // Deep nesting is hard to follow\n      }\n    }\n  }\n}\n\n// ✅ Guard clauses to reduce nesting\nif (!user) return;\nif (!user.isActive) return;\nif (!user.hasPermission('edit')) return;\nif (!resource.isAvailable) return;\n\n// Clear logic at top level\n\n// ✅ Extract complex conditions\nfunction canEditResource(user: User, resource: Resource): boolean {\n  return user &&\n         user.isActive &&\n         user.hasPermission('edit') &&\n         resource.isAvailable;\n}\n\nif (canEditResource(user, resource)) {\n  // Single level of nesting\n}\n```\n\n## File Length\n\n```typescript\n// ❌ God file (1000+ lines)\n// user-service.ts with 50 methods handling users, auth, permissions...\n\n// ✅ Split into focused modules (~200-300 lines each)\n// user-service.ts - CRUD operations\n// auth-service.ts - login, logout, tokens\n// permission-service.ts - role checks\n```\n\n## File Organization\n\n```typescript\n// Consistent structure within files:\n\n// 1. Imports (grouped and ordered)\nimport fs from 'fs';                    // Standard library\nimport express from 'express';          // External dependencies\nimport { UserService } from './user';   // Internal modules\n\n// 2. Constants and type definitions\nconst MAX_RETRIES = 3;\n\ninterface UserDTO {\n  id: string;\n  name: string;\n}\n\n// 3. Helper functions (if needed)\nfunction validateInput(input: unknown): boolean {\n  // ...\n}\n\n// 4. Main exports/classes\nexport class OrderService {\n  // ...\n}\n\n// 5. Module initialization (if applicable)\nexport default new OrderService();\n```\n\n## Single Responsibility\n\n```typescript\n// ❌ Class doing too much\nclass UserManager {\n  createUser() {}\n  updateUser() {}\n  sendEmail() {}\n  hashPassword() {}\n  generateToken() {}\n}\n\n// ✅ Split by responsibility\nclass UserRepository {\n  create(user: User) {}\n  update(id: string, data: Partial<User>) {}\n}\n\nclass EmailService {\n  send(to: string, template: string) {}\n}\n\nclass PasswordService {\n  hash(password: string): string {}\n  verify(password: string, hash: string): boolean {}\n}\n\nclass AuthService {\n  generateToken(userId: string): string {}\n}\n```\n\n## DRY (Don't Repeat Yourself)\n\n```typescript\n// ❌ Duplicated logic\nfunction processUserOrder(order: Order) {\n  const total = order.items.reduce((sum, i) => sum + i.price * i.quantity, 0);\n  const tax = total * 0.08;\n  return total + tax;\n}\n\nfunction processGuestOrder(order: Order) {\n  const total = order.items.reduce((sum, i) => sum + i.price * i.quantity, 0);\n  const tax = total * 0.08;\n  return total + tax;\n}\n\n// ✅ Extract common logic\nfunction calculateOrderTotal(items: Item[]): number {\n  const subtotal = items.reduce((sum, i) => sum + i.price * i.quantity, 0);\n  const tax = subtotal * 0.08;\n  return subtotal + tax;\n}\n\nfunction processUserOrder(order: Order) {\n  return calculateOrderTotal(order.items);\n}\n```\n",
+    "templates/agents/architecture-reviewer.md": "---\nmodel: \"claude-sonnet-4-5\"\ndescription: \"Reviews architectural decisions and patterns\"\n---\n\n# Architecture Reviewer\n\nYou are an architecture review agent ensuring code changes align with the project's architectural principles and patterns.\n\n## Your Responsibilities\n\n### Architectural Compliance\n- Verify changes follow established architecture pattern (layered, hexagonal, microservices, etc.)\n- Check dependency directions are correct\n- Ensure proper separation of concerns\n- Validate module boundaries\n\n### Design Patterns\n- Identify appropriate use of design patterns\n- Flag anti-patterns (God objects, tight coupling, etc.)\n- Suggest pattern improvements when beneficial\n- Verify SOLID principles adherence\n\n### Technical Debt\n- Identify potential technical debt introduced\n- Flag shortcuts that may cause future issues\n- Suggest refactoring opportunities\n- Assess long-term maintainability impact\n\n## Review Checklist\n\n- [ ] Does this change respect the existing architecture?\n- [ ] Are dependencies pointing in the correct direction?\n- [ ] Is there proper separation between layers/modules?\n- [ ] Are interfaces/contracts well-defined?\n- [ ] Is the change introducing tight coupling?\n- [ ] Could this be simplified using existing patterns?\n- [ ] Does this create technical debt?\n- [ ] Is this scalable and maintainable?\n\n## Output Format\n\n```\n🏗️  Architecture Review\n\nFiles reviewed: X\nArchitecture: [Layered/Hexagonal/Microservices/etc.]\n\n✅ Strengths:\n- Proper dependency injection in ServiceFactory\n- Clean interface boundaries in API layer\n\n⚠️  Concerns:\n\n1. Dependency Violation (Critical)\n   - File: src/ui/components/UserForm.tsx:23\n   - Issue: Direct database access from UI layer\n   - Impact: Violates layered architecture\n   - Solution: Access data through service layer\n\n2. Tight Coupling (Important)\n   - File: src/services/email-service.ts:45\n   - Issue: Hard-coded dependency on specific SMTP library\n   - Impact: Difficult to swap email providers\n   - Solution: Use adapter pattern with EmailProvider interface\n\n3. Potential Debt (Minor)\n   - File: src/utils/cache.ts:12\n   - Issue: In-memory cache without eviction strategy\n   - Impact: May cause memory issues at scale\n   - Solution: Implement LRU eviction or use Redis\n\n📊 Summary:\n- Critical issues: 1\n- Important issues: 1\n- Minor issues: 1\n- Technical debt score: Medium\n\nRecommendation: Address critical dependency violation before merging\n```\n\n## Guidelines\n\n- Focus on architectural implications, not minor style issues\n- Consider both immediate and long-term impacts\n- Provide specific, actionable solutions\n- Explain the \"why\" behind each concern\n- Balance idealism with pragmatism\n",
+    "templates/agents/guideline-checker.md": "---\nmodel: \"claude-opus-4-5\"\ndescription: \"Verifies code changes comply with project guidelines\"\n---\n\n# Guideline Compliance Checker\n\nYou are an automated code review agent that verifies code changes follow the project's established guidelines.\n\n## Your Responsibilities\n\nWhen code changes are made, automatically verify:\n\n### Code Style Compliance\n- Naming conventions match project standards\n- File organization follows project structure\n- No redundant or commented-out code\n- Proper indentation and formatting\n\n### TypeScript/JavaScript Standards\n- TypeScript strict mode compliance\n- No `any` types (use `unknown` with type guards)\n- Proper interface/type definitions\n- Async/await patterns used correctly\n\n### Best Practices\n- Functions under 50 lines\n- Maximum 3 levels of nesting\n- Complex conditionals extracted to named functions\n- Error handling implemented properly\n- No magic numbers (use named constants)\n\n### Testing Requirements\n- New functions have corresponding tests\n- Test coverage maintained or improved\n- Tests follow AAA pattern (Arrange, Act, Assert)\n\n## Output Format\n\nReport findings in this format:\n\n```\n✅ Guideline Compliance Report\n\nFiles checked: X\n\n⚠️  Issues Found:\n\nsrc/services/example.ts:45\n  - Uses `any` type instead of `unknown`\n  - Function exceeds 50 lines (65 lines)\n\nsrc/utils/helper.ts:12\n  - Magic number 3600 should be named constant\n\nsrc/commands/init.ts:120\n  - Missing error handling for async operation\n\n📋 Recommendations:\n1. Replace `any` with `unknown` and add type guard\n2. Extract SECONDS_IN_HOUR = 3600 as constant\n3. Add try-catch block for async operation\n\nOverall: 3 issues require attention\n```\n\n## Guidelines\n\n- Be specific with file paths and line numbers\n- Explain WHY each issue matters\n- Provide actionable recommendations\n- Prioritize by severity (critical, important, minor)\n- Acknowledge good practices when found\n",
+    "templates/agents/security-auditor.md": "---\nmodel: \"claude-opus-4-5\"\ntemperature: 0.3\ndescription: \"Identifies security vulnerabilities and risks\"\n---\n\n# Security Auditor\n\nYou are a security-focused code review agent that identifies vulnerabilities, security risks, and unsafe practices.\n\n## Your Responsibilities\n\n### OWASP Top 10 Checks\n- SQL Injection vulnerabilities\n- Cross-Site Scripting (XSS)\n- Authentication and session management flaws\n- Insecure direct object references\n- Security misconfiguration\n- Sensitive data exposure\n- Missing access control\n- Cross-Site Request Forgery (CSRF)\n- Using components with known vulnerabilities\n- Insufficient logging and monitoring\n\n### Code Security\n- Input validation and sanitization\n- Output encoding\n- Parameterized queries\n- Secure random number generation\n- Cryptographic best practices\n- Secrets and credential management\n- API key and token handling\n\n### Common Vulnerabilities\n- Path traversal attacks\n- Command injection\n- XML/XXE injection\n- Deserialization vulnerabilities\n- Race conditions\n- Buffer overflows (in applicable languages)\n\n## Review Process\n\n1. Scan for obvious security issues\n2. Check data flow from user input to storage/output\n3. Verify authentication and authorization\n4. Review cryptographic usage\n5. Check dependency versions for known vulnerabilities\n6. Assess error handling and information disclosure\n\n## Output Format\n\n```\n🔒 Security Audit Report\n\nFiles audited: X\nRisk Level: [Low/Medium/High/Critical]\n\n🚨 Critical Vulnerabilities:\n\n1. SQL Injection Risk\n   - File: src/database/user-repository.ts:34\n   - Code: `db.query(\\`SELECT * FROM users WHERE id = ${userId}\\`)`\n   - Risk: Allows arbitrary SQL execution\n   - Fix: Use parameterized query: `db.query('SELECT * FROM users WHERE id = ?', [userId])`\n   - CWE: CWE-89\n\n⚠️  High Risk Issues:\n\n2. Sensitive Data Exposure\n   - File: src/api/auth-controller.ts:89\n   - Code: User password returned in API response\n   - Risk: Password hash exposed to clients\n   - Fix: Remove password from response object\n\n🔔 Medium Risk Issues:\n\n3. Missing Input Validation\n   - File: src/api/upload-controller.ts:12\n   - Code: File upload without type validation\n   - Risk: Malicious file upload\n   - Fix: Validate file type and size before processing\n\n💡 Security Recommendations:\n\n- Enable Content Security Policy headers\n- Implement rate limiting on authentication endpoints\n- Add CSRF tokens to state-changing operations\n- Use secure HTTP-only cookies for sessions\n- Enable security headers (X-Frame-Options, etc.)\n\n📊 Summary:\n- Critical: 1\n- High: 1\n- Medium: 1\n- Low: 0\n\n⚠️  Action Required: Fix critical SQL injection before deployment\n```\n\n## Guidelines\n\n- Prioritize by actual risk, not theoretical scenarios\n- Provide clear, actionable fixes with code examples\n- Reference CWE/CVE numbers when applicable\n- Consider the application's threat model\n- Balance security with usability\n- Don't create false positives unnecessarily\n",
     "testing/index.md": "# Testing Guidelines\n\nThis directory contains testing best practices and patterns.\n\n## Available Chunks\n\n- **unit-fundamentals.md** - AAA pattern, behavior testing, descriptive names\n- **unit-mocking.md** - Test doubles, when to mock, mock verification\n- **integration.md** - API testing, database testing, test isolation\n",
     "testing/integration.md": "# Integration Testing\n\n## Testing Real Dependencies\n\n```typescript\ndescribe('UserRepository Integration', () => {\n  let db: Database;\n  let repository: UserRepository;\n\n  beforeAll(async () => {\n    db = await createTestDatabase();\n    repository = new UserRepository(db);\n  });\n\n  afterAll(async () => {\n    await db.close();\n  });\n\n  beforeEach(async () => {\n    await db.clear('users'); // Clean slate for each test\n  });\n\n  it('should persist and retrieve user', async () => {\n    const userData = { email: 'test@example.com', name: 'Test User' };\n\n    const created = await repository.create(userData);\n    const found = await repository.findById(created.id);\n\n    expect(found).toEqual(expect.objectContaining(userData));\n  });\n});\n```\n\n## API Integration Tests\n\n```typescript\ndescribe('POST /api/users', () => {\n  let app: Express;\n  let db: Database;\n\n  beforeAll(async () => {\n    db = await createTestDatabase();\n    app = createApp(db);\n  });\n\n  afterEach(async () => {\n    await db.clear('users');\n  });\n\n  it('should create user and return 201', async () => {\n    const response = await request(app)\n      .post('/api/users')\n      .send({ email: 'new@example.com', name: 'New User' })\n      .expect(201);\n\n    expect(response.body.data).toEqual(\n      expect.objectContaining({\n        email: 'new@example.com',\n        name: 'New User'\n      })\n    );\n\n    // Verify in database\n    const user = await db.findOne('users', { email: 'new@example.com' });\n    expect(user).toBeTruthy();\n  });\n\n  it('should return 400 for invalid email', async () => {\n    const response = await request(app)\n      .post('/api/users')\n      .send({ email: 'invalid', name: 'Test' })\n      .expect(400);\n\n    expect(response.body.error.code).toBe('VALIDATION_ERROR');\n  });\n});\n```\n\n## Database Transaction Testing\n\n```typescript\ndescribe('OrderService Integration', () => {\n  it('should rollback on payment failure', async () => {\n    const order = await orderService.createOrder({ items: [...] });\n\n    // Mock payment to fail\n    paymentGateway.charge.mockRejectedValue(new Error('Declined'));\n\n    await expect(\n      orderService.processOrder(order.id)\n    ).rejects.toThrow('Payment failed');\n\n    // Verify order status unchanged\n    const updatedOrder = await orderRepository.findById(order.id);\n    expect(updatedOrder.status).toBe('pending');\n\n    // Verify inventory not deducted\n    const inventory = await inventoryRepository.findByProductId(productId);\n    expect(inventory.quantity).toBe(originalQuantity);\n  });\n});\n```\n\n## Test Data Builders\n\n```typescript\nclass UserBuilder {\n  private data: Partial<User> = {\n    email: 'default@example.com',\n    name: 'Default User',\n    role: 'user'\n  };\n\n  withEmail(email: string) { this.data.email = email; return this; }\n  withRole(role: string) { this.data.role = role; return this; }\n  asAdmin() { this.data.role = 'admin'; return this; }\n\n  build(): User { return this.data as User; }\n\n  async save(db: Database): Promise<User> {\n    return db.insert('users', this.data);\n  }\n}\n\n// Usage\nconst admin = await new UserBuilder()\n  .withEmail('admin@example.com')\n  .asAdmin()\n  .save(db);\n```\n\n## Test Isolation\n\n```typescript\n// Use transactions that rollback\ndescribe('IntegrationTests', () => {\n  beforeEach(async () => {\n    await db.beginTransaction();\n  });\n\n  afterEach(async () => {\n    await db.rollbackTransaction();\n  });\n});\n\n// Or use test containers\nimport { PostgreSqlContainer } from '@testcontainers/postgresql';\n\nlet container: PostgreSqlContainer;\n\nbeforeAll(async () => {\n  container = await new PostgreSqlContainer().start();\n  db = await connect(container.getConnectionUri());\n});\n\nafterAll(async () => {\n  await container.stop();\n});\n```\n",
     "testing/unit-fundamentals.md": "# Unit Testing Fundamentals\n\n## Arrange-Act-Assert Pattern\n\n```typescript\ndescribe('UserService', () => {\n  it('should create user with hashed password', async () => {\n    // Arrange - Set up test data and dependencies\n    const userData = { email: 'test@example.com', password: 'secret123' };\n    const mockRepo = { save: jest.fn().mockResolvedValue({ id: '1', ...userData }) };\n    const service = new UserService(mockRepo);\n\n    // Act - Execute the behavior being tested\n    const result = await service.createUser(userData);\n\n    // Assert - Verify the outcomes\n    expect(result.id).toBe('1');\n    expect(mockRepo.save).toHaveBeenCalledWith(\n      expect.objectContaining({ email: 'test@example.com' })\n    );\n  });\n});\n```\n\n## Test Observable Behavior, Not Implementation\n\n```typescript\n// ❌ Bad: Testing implementation details\nit('should call validateEmail method', () => {\n  const spy = jest.spyOn(service, 'validateEmail');\n  service.createUser({ email: 'test@example.com' });\n  expect(spy).toHaveBeenCalled();\n});\n\n// ✅ Good: Testing observable behavior\nit('should reject invalid email', async () => {\n  await expect(\n    service.createUser({ email: 'invalid-email' })\n  ).rejects.toThrow('Invalid email format');\n});\n\nit('should accept valid email', async () => {\n  const result = await service.createUser({ email: 'valid@example.com' });\n  expect(result.email).toBe('valid@example.com');\n});\n```\n\n## One Assertion Per Test Concept\n\n```typescript\n// ❌ Bad: Multiple unrelated assertions\nit('should validate user input', () => {\n  expect(() => validate({ age: -1 })).toThrow();\n  expect(() => validate({ age: 200 })).toThrow();\n  expect(() => validate({ name: '' })).toThrow();\n});\n\n// ✅ Good: One test per scenario\nit('should reject negative age', () => {\n  expect(() => validate({ age: -1 })).toThrow('Age must be positive');\n});\n\nit('should reject age over 150', () => {\n  expect(() => validate({ age: 200 })).toThrow('Age must be under 150');\n});\n\nit('should reject empty name', () => {\n  expect(() => validate({ name: '' })).toThrow('Name is required');\n});\n```\n\n## Descriptive Test Names\n\n```typescript\n// ❌ Vague names\nit('should work correctly', () => {});\nit('handles edge case', () => {});\n\n// ✅ Descriptive names - describe the scenario and expected outcome\nit('should return empty array when no users match filter', () => {});\nit('should throw ValidationError when email is empty', () => {});\nit('should retry failed payment up to 3 times before giving up', () => {});\n```\n\n## Tests Should Be Independent\n\n```typescript\n// ❌ Bad: Tests depend on each other\nlet userId: string;\n\nit('should create user', async () => {\n  const user = await service.createUser(data);\n  userId = user.id; // Shared state!\n});\n\nit('should update user', async () => {\n  await service.updateUser(userId, newData); // Depends on previous test\n});\n\n// ✅ Good: Each test is self-contained\nit('should update user', async () => {\n  const user = await service.createUser(data);\n  const updated = await service.updateUser(user.id, newData);\n  expect(updated.name).toBe(newData.name);\n});\n```\n\n## Test Edge Cases\n\n```typescript\ndescribe('divide', () => {\n  it('should divide two positive numbers', () => {\n    expect(divide(10, 2)).toBe(5);\n  });\n\n  it('should throw when dividing by zero', () => {\n    expect(() => divide(10, 0)).toThrow('Division by zero');\n  });\n\n  it('should handle negative numbers', () => {\n    expect(divide(-10, 2)).toBe(-5);\n  });\n\n  it('should return zero when numerator is zero', () => {\n    expect(divide(0, 5)).toBe(0);\n  });\n});\n```\n",
@@ -957,5 +1018,5 @@ export const EMBEDDED_DATA: EmbeddedData = {
   }
 };
 
-export const GUIDELINE_COUNT = 80;
+export const GUIDELINE_COUNT = 83;
 export const MAPPING_COUNT = 57;

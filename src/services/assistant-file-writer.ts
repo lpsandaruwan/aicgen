@@ -2,38 +2,61 @@ import { writeFile, mkdir } from 'fs/promises';
 import { join, dirname } from 'path';
 import { AIAssistant } from '../models/project.js';
 import { ProfileSelection } from '../models/profile.js';
+import { GuidelineLoader } from './guideline-loader.js';
+import { HookGenerator } from './hook-generator.js';
+import { SubAgentGenerator } from './subagent-generator.js';
 
 export interface GeneratedFile {
   path: string;
   content: string;
+  type: 'main' | 'guideline' | 'config' | 'agent' | 'universal';
 }
 
 export class AssistantFileWriter {
-  generateFiles(
+  private guidelineLoader: GuidelineLoader;
+  private hookGenerator: HookGenerator;
+  private subAgentGenerator: SubAgentGenerator;
+
+  static async create(): Promise<AssistantFileWriter> {
+    const guidelineLoader = await GuidelineLoader.create();
+    return new AssistantFileWriter(guidelineLoader);
+  }
+
+  private constructor(guidelineLoader: GuidelineLoader) {
+    this.guidelineLoader = guidelineLoader;
+    this.hookGenerator = new HookGenerator();
+    this.subAgentGenerator = new SubAgentGenerator();
+  }
+
+  async generateFiles(
     assistant: AIAssistant,
-    assembledContent: string,
+    guidelineIds: string[],
     selection: ProfileSelection,
     projectPath: string
-  ): GeneratedFile[] {
+  ): Promise<GeneratedFile[]> {
     const files: GeneratedFile[] = [];
+
+    const categoryTree = this.organizeByCategory(guidelineIds);
 
     switch (assistant) {
       case 'claude-code':
-        files.push(...this.generateClaudeCodeFiles(assembledContent, selection));
+        files.push(...await this.generateClaudeCodeFiles(categoryTree, guidelineIds, selection, projectPath));
         break;
       case 'copilot':
-        files.push(...this.generateCopilotFiles(assembledContent, selection));
+        files.push(...await this.generateCopilotFiles(categoryTree, selection));
         break;
       case 'gemini':
-        files.push(...this.generateGeminiFiles(assembledContent, selection));
+        files.push(...await this.generateGeminiFiles(categoryTree, selection));
         break;
       case 'antigravity':
-        files.push(...this.generateAntigravityFiles(assembledContent, selection));
+        files.push(...await this.generateAntigravityFiles(categoryTree, selection));
         break;
       case 'codex':
-        files.push(...this.generateCodexFiles(assembledContent, selection));
+        files.push(...await this.generateCodexFiles(categoryTree, selection));
         break;
     }
+
+    files.push(this.generateUniversalAgentsFile(categoryTree, selection));
 
     return files.map(file => ({
       ...file,
@@ -48,78 +71,489 @@ export class AssistantFileWriter {
     }
   }
 
-  private generateClaudeCodeFiles(content: string, selection: ProfileSelection): GeneratedFile[] {
-    const header = `# Development Instructions
+  private organizeByCategory(guidelineIds: string[]): Map<string, string[]> {
+    const byCategory = new Map<string, string[]>();
+
+    for (const id of guidelineIds) {
+      const mapping = (this.guidelineLoader as any).mappings[id];
+      if (mapping) {
+        const category = mapping.category || 'General';
+        if (!byCategory.has(category)) {
+          byCategory.set(category, []);
+        }
+        byCategory.get(category)!.push(id);
+      }
+    }
+
+    return byCategory;
+  }
+
+  private async generateClaudeCodeFiles(
+    categoryTree: Map<string, string[]>,
+    guidelineIds: string[],
+    selection: ProfileSelection,
+    projectPath: string
+  ): Promise<GeneratedFile[]> {
+    const files: GeneratedFile[] = [];
+
+    const mainReferences: string[] = [];
+    const guidelines: string[] = [];
+
+    for (const [category, ids] of categoryTree) {
+      const categoryFile = category.toLowerCase().replace(/\s+/g, '-');
+      const categoryContent = ids.map(id => {
+        const content = this.guidelineLoader.loadGuideline(id);
+        guidelines.push(content);
+        return content;
+      }).join('\n\n---\n\n');
+
+      files.push({
+        path: `.claude/guidelines/${categoryFile}.md`,
+        content: `# ${category}\n\n${categoryContent}`,
+        type: 'guideline'
+      });
+
+      mainReferences.push(`- **${category}**: @.claude/guidelines/${categoryFile}.md`);
+    }
+
+    const mainContent = `# ${selection.projectType.charAt(0).toUpperCase() + selection.projectType.slice(1)} Project - Development Guidelines
 
 **Language:** ${selection.language}
-**Project Type:** ${selection.projectType}
 **Architecture:** ${selection.architecture}
 **Level:** ${selection.level}
 
----
+## Guidelines
 
-`;
+This project follows structured coding guidelines organized by category:
 
-    const footer = `
+${mainReferences.join('\n')}
+
+## Quick Reference
+
+- Run tests: Check package.json scripts
+- Build: Check package.json scripts
+- Code style: See Code Style guidelines above
+- Architecture: See Architecture guidelines above
+
+## Important Notes
+
+- Follow the guidelines referenced above
+- Use sub-agents in \`.claude/agents/\` to verify compliance
+- Hooks in \`.claude/settings.json\` enforce critical rules
 
 ---
 *Generated by aicgen*
 `;
 
-    return [{ path: 'claude.md', content: header + content + footer }];
+    files.push({
+      path: '.claude/CLAUDE.md',
+      content: mainContent,
+      type: 'main'
+    });
+
+    const hooks = await this.hookGenerator.generateHooks(guidelineIds);
+    const settingsContent = this.hookGenerator.generateClaudeCodeSettings(hooks, projectPath);
+
+    files.push({
+      path: '.claude/settings.json',
+      content: settingsContent,
+      type: 'config'
+    });
+
+    const subAgents = await this.subAgentGenerator.generateSubAgents(guidelineIds);
+    for (const agent of subAgents) {
+      files.push({
+        path: `.claude/agents/${agent.name}.md`,
+        content: agent.content,
+        type: 'agent'
+      });
+    }
+
+    return files;
   }
 
-  private generateCopilotFiles(content: string, selection: ProfileSelection): GeneratedFile[] {
-    const header = `# GitHub Copilot Instructions
+  private async generateCopilotFiles(
+    categoryTree: Map<string, string[]>,
+    selection: ProfileSelection
+  ): Promise<GeneratedFile[]> {
+    const files: GeneratedFile[] = [];
 
-**Language:** ${selection.language}
-**Type:** ${selection.projectType}
+    const mainReferences: string[] = [];
 
+    for (const [category, ids] of categoryTree) {
+      const categoryFile = category.toLowerCase().replace(/\s+/g, '-');
+      const categoryContent = ids.map(id =>
+        this.guidelineLoader.loadGuideline(id)
+      ).join('\n\n---\n\n');
+
+      const instructionsContent = `---
+applyTo: "**/*"
+description: "${category} guidelines"
 ---
 
+# ${category}
+
+${categoryContent}
 `;
 
-    return [{ path: '.github/copilot-instructions.md', content: header + content }];
+      files.push({
+        path: `.github/instructions/${categoryFile}.instructions.md`,
+        content: instructionsContent,
+        type: 'guideline'
+      });
+
+      mainReferences.push(`- ${category}: @.github/instructions/${categoryFile}.instructions.md`);
+    }
+
+    const mainContent = `# GitHub Copilot Instructions
+
+**Language:** ${selection.language}
+**Project Type:** ${selection.projectType}
+**Architecture:** ${selection.architecture}
+
+## Guidelines
+
+${mainReferences.join('\n')}
+
+## Development
+
+See the instruction files above for detailed guidelines on:
+- Code style and naming conventions
+- Architecture patterns and best practices
+- Testing requirements
+- Security considerations
+
+---
+*Generated by aicgen*
+`;
+
+    files.push({
+      path: '.github/copilot-instructions.md',
+      content: mainContent,
+      type: 'main'
+    });
+
+    return files;
   }
 
-  private generateGeminiFiles(content: string, selection: ProfileSelection): GeneratedFile[] {
-    const header = `# Gemini Development Guide
+  private generateGeminiFiles(
+    categoryTree: Map<string, string[]>,
+    selection: ProfileSelection
+  ): Promise<GeneratedFile[]> {
+    const files: GeneratedFile[] = [];
+
+    let allGuidelines = '';
+    for (const [category, ids] of categoryTree) {
+      const categoryContent = ids.map(id =>
+        this.guidelineLoader.loadGuideline(id)
+      ).join('\n\n');
+
+      allGuidelines += `\n\n## ${category}\n\n${categoryContent}\n\n---\n`;
+    }
+
+    const content = `# Gemini Development Guide
 
 **Language:** ${selection.language}
 **Type:** ${selection.projectType}
 **Architecture:** ${selection.architecture}
 
----
+${allGuidelines}
 
+---
+*Generated by aicgen*
 `;
 
-    return [{ path: '.gemini/instructions.md', content: header + content }];
+    files.push({
+      path: '.gemini/instructions.md',
+      content,
+      type: 'main'
+    });
+
+    return Promise.resolve(files);
   }
 
-  private generateAntigravityFiles(content: string, selection: ProfileSelection): GeneratedFile[] {
-    const header = `# Agent Rules
+  private async generateAntigravityFiles(
+    categoryTree: Map<string, string[]>,
+    selection: ProfileSelection
+  ): Promise<GeneratedFile[]> {
+    const files: GeneratedFile[] = [];
+
+    // Generate separate rule files for each category (bullet-point format)
+    for (const [category, ids] of categoryTree) {
+      const guidelines = ids.map(id => {
+        const guideline = this.guidelineLoader.loadGuideline(id);
+        // Extract key points from guideline and format as bullets
+        return this.formatAsBulletPoints(guideline);
+      }).filter(Boolean).join('\n');
+
+      if (guidelines) {
+        const fileName = category.toLowerCase().replace(/\s+/g, '-');
+        files.push({
+          path: `.agent/rules/${fileName}.md`,
+          content: guidelines,
+          type: 'guideline'
+        });
+      }
+    }
+
+    // Generate workflows based on instruction level
+    const workflows = this.getWorkflowsForLevel(selection.level);
+    for (const workflow of workflows) {
+      files.push({
+        path: `.agent/workflows/${workflow.name}.md`,
+        content: workflow.content,
+        type: 'config'
+      });
+    }
+
+    return files;
+  }
+
+  private formatAsBulletPoints(guideline: string): string {
+    // Convert guideline content to bullet points
+    const lines = guideline.split('\n').filter(line => line.trim());
+    const bullets: string[] = [];
+
+    for (const line of lines) {
+      const trimmed = line.trim();
+      // Skip empty lines, headers, and separators
+      if (!trimmed || trimmed.startsWith('#') || trimmed.startsWith('---')) {
+        continue;
+      }
+      // If already a bullet point, keep it
+      if (trimmed.startsWith('*') || trimmed.startsWith('-')) {
+        bullets.push(trimmed.startsWith('*') ? trimmed : `* ${trimmed.substring(1).trim()}`);
+      } else {
+        // Convert regular lines to bullet points
+        bullets.push(`* ${trimmed}`);
+      }
+    }
+
+    return bullets.join('\n');
+  }
+
+  private getWorkflowsForLevel(level: string): Array<{ name: string; content: string }> {
+    const workflows: Array<{ name: string; content: string }> = [];
+
+    // Basic workflows for all levels
+    workflows.push({
+      name: 'generate-unit-tests',
+      content: `---
+description: Generate comprehensive unit tests for all functions and methods
+---
+
+* Analyze the selected file or directory for testable code
+* Generate test files with appropriate naming conventions
+* Create test cases covering happy path, edge cases, and error handling
+* Mock external dependencies appropriately
+* Follow language-specific testing best practices
+* Aim for >80% code coverage
+* Include setup and teardown methods where needed`
+    });
+
+    workflows.push({
+      name: 'add-documentation',
+      content: `---
+description: Add or update comprehensive documentation for code
+---
+
+* Analyze the selected code for documentation needs
+* Add inline documentation with clear descriptions
+* Include parameter types and return value documentation
+* Add usage examples for complex functions
+* Follow language-specific documentation standards
+* Update README.md if adding new features`
+    });
+
+    // Standard level and above
+    if (level === 'standard' || level === 'expert' || level === 'full') {
+      workflows.push({
+        name: 'refactor-extract-module',
+        content: `---
+description: Extract code into a separate, reusable module
+---
+
+* Identify the code section to extract
+* Analyze dependencies and determine module interface
+* Create a new module file following project conventions
+* Maintain original functionality and behavior
+* Update imports and exports appropriately
+* Ensure no circular dependencies
+* Add documentation to the new module
+* Verify all tests still pass`
+      });
+
+      workflows.push({
+        name: 'generate-integration-tests',
+        content: `---
+description: Generate integration tests for API endpoints and system components
+---
+
+* Identify integration points (APIs, databases, services)
+* Create integration test files
+* Test end-to-end workflows
+* Use realistic test data and fixtures
+* Include proper setup and teardown
+* Ensure tests are idempotent`
+      });
+    }
+
+    // Expert and full levels
+    if (level === 'expert' || level === 'full') {
+      workflows.push({
+        name: 'security-audit',
+        content: `---
+description: Perform comprehensive security audit of the codebase
+---
+
+* Scan for common vulnerabilities (SQL injection, XSS, etc.)
+* Check authentication and authorization logic
+* Review input validation and sanitization
+* Examine error handling for information leakage
+* Verify secure handling of sensitive data
+* Check third-party dependencies
+* Suggest remediation steps
+* Prioritize findings by severity`
+      });
+
+      workflows.push({
+        name: 'performance-audit',
+        content: `---
+description: Analyze code for performance bottlenecks and optimization opportunities
+---
+
+* Profile code to identify hotspots
+* Check for N+1 queries and inefficient algorithms
+* Analyze caching opportunities
+* Review resource management
+* Suggest specific optimizations
+* Estimate performance impact
+* Prioritize recommendations`
+      });
+    }
+
+    return workflows;
+  }
+
+  private generateCodexFiles(
+    categoryTree: Map<string, string[]>,
+    selection: ProfileSelection
+  ): Promise<GeneratedFile[]> {
+    const files: GeneratedFile[] = [];
+
+    let allGuidelines = '';
+    for (const [category, ids] of categoryTree) {
+      const categoryContent = ids.map(id =>
+        this.guidelineLoader.loadGuideline(id)
+      ).join('\n\n');
+
+      allGuidelines += `\n\n## ${category}\n\n${categoryContent}\n\n---\n`;
+    }
+
+    const content = `# Development Guide
+
+**Language:** ${selection.language}
+**Type:** ${selection.projectType}
+
+${allGuidelines}
+
+---
+*Generated by aicgen*
+`;
+
+    files.push({
+      path: '.codex/instructions.md',
+      content,
+      type: 'main'
+    });
+
+    return Promise.resolve(files);
+  }
+
+  private generateUniversalAgentsFile(
+    categoryTree: Map<string, string[]>,
+    selection: ProfileSelection
+  ): GeneratedFile {
+    const categories: string[] = [];
+
+    for (const [category, ids] of categoryTree) {
+      const examples = ids.slice(0, 3).map(id => {
+        const mapping = (this.guidelineLoader as any).mappings[id];
+        return `- ${mapping.path.split('/').pop()?.replace('.md', '')}`;
+      }).join('\n  ');
+
+      categories.push(`### ${category}\n\n  ${examples}\n`);
+    }
+
+    const content = `# AGENTS.md
+
+## Project Overview
 
 **Language:** ${selection.language}
 **Type:** ${selection.projectType}
 **Architecture:** ${selection.architecture}
 
+## Development Guidelines
+
+This project follows structured coding guidelines across multiple categories:
+
+${categories.join('\n')}
+
+## Commands
+
+**Install dependencies:**
+\`\`\`bash
+# Check package.json for package manager
+npm install
+# or yarn install
+# or pnpm install
+# or bun install
+\`\`\`
+
+**Run tests:**
+\`\`\`bash
+# Check package.json scripts section
+npm test
+\`\`\`
+
+**Build:**
+\`\`\`bash
+# Check package.json scripts section
+npm run build
+\`\`\`
+
+## Code Style
+
+See tool-specific instruction files for detailed code style guidelines:
+- Claude Code: \`.claude/CLAUDE.md\`
+- GitHub Copilot: \`.github/copilot-instructions.md\`
+- Gemini: \`.gemini/instructions.md\`
+- Antigravity: \`.agent/rules/instructions.md\`
+
+## Architecture
+
+This project follows **${selection.architecture}** architecture. See architecture guidelines in tool-specific files.
+
+## Testing
+
+Follow testing guidelines in tool-specific instruction files.
+
+## Git Workflow
+
+- Write clear commit messages
+- Follow conventional commits if configured
+- Run tests before pushing
+- Keep PRs focused and reviewable
+
 ---
 
+*Generated by aicgen - Universal AI agent instructions following the AGENTS.md standard*
 `;
 
-    return [{ path: '.agent/rules/instructions.md', content: header + content }];
-  }
-
-  private generateCodexFiles(content: string, selection: ProfileSelection): GeneratedFile[] {
-    const header = `# Development Guide
-
-**Language:** ${selection.language}
-**Type:** ${selection.projectType}
-
----
-
-`;
-
-    return [{ path: '.codex/instructions.md', content: header + content }];
+    return {
+      path: 'AGENTS.md',
+      content,
+      type: 'universal'
+    };
   }
 }

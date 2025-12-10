@@ -71,6 +71,7 @@ async function embedData() {
 
 export interface GuidelineMapping {
   path: string;
+  category?: string;
   languages?: string[];
   levels?: string[];
   architectures?: string[];

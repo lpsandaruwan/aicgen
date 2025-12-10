@@ -4,7 +4,7 @@ import { GuidelineLoader } from '../services/guideline-loader.js';
 export async function statsCommand() {
   console.log(chalk.blue.bold('\n📊 Guideline Statistics\n'));
 
-  const loader = new GuidelineLoader();
+  const loader = await GuidelineLoader.create();
   const stats = loader.getStats();
 
   console.log(chalk.cyan('Total Guidelines:'), chalk.white(stats.totalGuidelines));
@@ -28,6 +28,13 @@ export async function statsCommand() {
     .sort((a, b) => b[1] - a[1])
     .forEach(([arch, count]) => {
       console.log(`   ${chalk.gray(arch.padEnd(20))} ${chalk.white(count)}`);
+    });
+
+  console.log(chalk.cyan('\n📚 By Category:'));
+  Object.entries(stats.byCategory)
+    .sort((a, b) => b[1] - a[1])
+    .forEach(([category, count]) => {
+      console.log(`   ${chalk.gray(category.padEnd(20))} ${chalk.white(count)}`);
     });
 
   console.log(chalk.cyan('\n🏷️  Top Tags:'));

@@ -4,6 +4,12 @@ import chalk from 'chalk';
 import { ConfigGenerator } from '../services/config-generator.js';
 import { ProfileSelection, InstructionLevel, ArchitectureType } from '../models/profile.js';
 import { AIAssistant, Language, ProjectType } from '../models/project.js';
+import { GuidelineLoader } from '../services/guideline-loader.js';
+import { showBanner, showInstructions } from '../utils/banner.js';
+import { WizardStateManager, BACK_VALUE, addBackOption } from '../utils/wizard-state.js';
+import { createSummaryBox, createMetricsBox } from '../utils/formatting.js';
+import { selectGuidelines } from './guideline-selector.js';
+import { CONFIG, GITHUB_RELEASES_URL } from '../config.js';
 
 interface InitOptions {
   assistant?: string;
@@ -42,13 +48,6 @@ const ASSISTANTS: { value: AIAssistant; name: string; description: string }[] = 
   { value: 'codex', name: 'OpenAI Codex', description: 'OpenAI\'s code model' }
 ];
 
-const LEVELS: { value: InstructionLevel; name: string; description: string }[] = [
-  { value: 'basic', name: 'Basic', description: 'Essential guidelines for quick projects (~200 lines)' },
-  { value: 'standard', name: 'Standard', description: 'Production-ready practices (~500 lines)' },
-  { value: 'expert', name: 'Expert', description: 'Advanced patterns for scaling (~1000 lines)' },
-  { value: 'full', name: 'Full', description: 'Everything - all guidelines (~2000+ lines)' }
-];
-
 const ARCHITECTURES: { value: ArchitectureType; name: string; description: string }[] = [
   { value: 'layered', name: 'Layered', description: 'Simple layers: UI → Business → Data' },
   { value: 'modular-monolith', name: 'Modular Monolith', description: 'Single deploy with clear module boundaries' },
@@ -59,28 +58,38 @@ const ARCHITECTURES: { value: ArchitectureType; name: string; description: strin
 ];
 
 export async function initCommand(options: InitOptions) {
-  console.log(chalk.blue.bold('\n🤖 aicgen\n'));
+  showBanner();
+  showInstructions();
 
-  const generator = new ConfigGenerator();
+  // Check for guideline updates (non-blocking)
+  checkForUpdatesInBackground();
+
+  const generator = await ConfigGenerator.create();
   const projectPath = process.cwd();
+  const wizard = new WizardStateManager();
 
   const spinner = ora('Detecting project...').start();
 
   try {
-    // Quick detection - just language
+    // Detect project
     const detected = await generator.detectProject(projectPath);
     spinner.succeed('Project detected');
 
-    // Show what we detected
-    console.log(chalk.cyan('\n📁 Detected:'));
-    console.log(`   ${chalk.white(detected.name)}`);
-    if (detected.language !== 'unknown') {
-      console.log(`   Language: ${chalk.white(detected.language)}`);
-    }
+    wizard.updateState({
+      detectedLanguage: detected.language !== 'unknown' ? detected.language : undefined,
+      detectedProjectName: detected.name,
+      hasExistingConfig: detected.hasExistingConfig
+    });
+
+    // Show detection results in box
+    console.log('\n' + createSummaryBox('📁 Project Detection', [
+      { label: 'Name', value: detected.name },
+      { label: 'Language', value: detected.language !== 'unknown' ? detected.language : 'Not detected' }
+    ]));
 
     // Check for existing config
     if (detected.hasExistingConfig && !options.force) {
-      console.log(chalk.yellow(`\n⚠️  Existing AI config detected`));
+      console.log(chalk.yellow('\n⚠️  Existing AI config detected'));
       const shouldContinue = await confirm({
         message: 'Overwrite existing configuration?',
         default: false
@@ -91,133 +100,96 @@ export async function initCommand(options: InitOptions) {
       }
     }
 
-    // 1. Confirm or select language
-    let language: Language;
-    if (detected.language !== 'unknown') {
-      const useDetected = await confirm({
-        message: `Use detected language: ${detected.language}?`,
-        default: true
-      });
-      if (useDetected) {
-        language = detected.language;
-      } else {
-        language = await selectLanguage();
-      }
-    } else {
-      language = await selectLanguage();
-    }
+    // Wizard loop with back navigation
+    while (!wizard.isComplete()) {
+      const state = wizard.getState();
 
-    // 2. Ask setup type
-    const setupType = await select({
-      message: 'Setup type?',
-      choices: [
-        { value: 'quick', name: 'Quick Setup', description: 'Recommended settings for common use cases' },
-        { value: 'custom', name: 'Custom', description: 'Full control over all options' }
-      ]
-    }) as 'quick' | 'custom';
+      switch (state.currentStep) {
+        case 'language':
+          await handleLanguageStep(wizard, detected.language);
+          break;
 
-    // 3. Ask project type
-    const projectType = await select({
-      message: 'What type of project is this?',
-      choices: PROJECT_TYPES.map(pt => ({
-        value: pt.value,
-        name: pt.name,
-        description: pt.description
-      }))
-    }) as ProjectType;
+        case 'projectType':
+          if (await handleProjectTypeStep(wizard) === BACK_VALUE) {
+            wizard.goBack();
+            continue;
+          }
+          break;
 
-    // 4. Select AI assistant
-    let assistant: AIAssistant;
-    if (options.assistant) {
-      assistant = options.assistant as AIAssistant;
-    } else {
-      assistant = await select({
-        message: 'Which AI assistant?',
-        choices: ASSISTANTS.map(a => ({
-          value: a.value,
-          name: a.name,
-          description: a.description
-        }))
-      }) as AIAssistant;
-    }
+        case 'assistant':
+          if (await handleAssistantStep(wizard, options) === BACK_VALUE) {
+            wizard.goBack();
+            continue;
+          }
+          break;
 
-    // 5. Select instruction level and architecture based on setup type
-    let level: InstructionLevel;
-    let architecture: ArchitectureType;
+        case 'setupType':
+          if (await handleSetupTypeStep(wizard) === BACK_VALUE) {
+            wizard.goBack();
+            continue;
+          }
+          break;
 
-    if (setupType === 'quick') {
-      // Quick setup: use smart defaults
-      const defaults = getSmartDefaults(projectType);
-      level = defaults.level;
-      architecture = defaults.architecture;
+        case 'architecture':
+          if (await handleArchitectureStep(wizard, options) === BACK_VALUE) {
+            wizard.goBack();
+            continue;
+          }
+          break;
 
-      console.log(chalk.gray(`\n📝 Using recommended settings:`));
-      console.log(chalk.gray(`   Level: ${level}`));
-      console.log(chalk.gray(`   Architecture: ${architecture}`));
-    } else {
-      // Custom setup: ask everything
-      if (options.level) {
-        level = options.level as InstructionLevel;
-      } else {
-        level = await select({
-          message: 'Instruction detail level?',
-          choices: LEVELS.map(l => ({
-            value: l.value,
-            name: l.name,
-            description: l.description
-          })),
-          default: 'standard'
-        }) as InstructionLevel;
+        case 'level':
+          if (await handleLevelStep(wizard, options) === BACK_VALUE) {
+            wizard.goBack();
+            continue;
+          }
+          break;
+
+        case 'guidelines':
+          if (state.setupType === 'custom') {
+            if (await handleGuidelinesStep(wizard) === BACK_VALUE) {
+              wizard.goBack();
+              continue;
+            }
+          } else {
+            wizard.goToNextStep();
+          }
+          break;
+
+        case 'summary':
+          const shouldGenerate = await handleSummaryStep(wizard);
+          if (shouldGenerate === BACK_VALUE) {
+            wizard.goBack();
+            continue;
+          } else if (!shouldGenerate) {
+            console.log(chalk.gray('\nCancelled.'));
+            return;
+          }
+          break;
       }
 
-      if (options.architecture) {
-        architecture = options.architecture as ArchitectureType;
+      if (state.currentStep !== 'summary') {
+        wizard.goToNextStep();
       } else {
-        architecture = await select({
-          message: 'Architecture pattern?',
-          choices: ARCHITECTURES.map(a => ({
-            value: a.value,
-            name: a.name,
-            description: a.description
-          })),
-          default: 'modular-monolith'
-        }) as ArchitectureType;
+        break;
       }
     }
 
-    // Summary
+    // Generate configuration
+    const state = wizard.getState();
     const selection: ProfileSelection = {
-      assistant,
-      language,
-      level,
-      architecture,
-      projectType
+      assistant: state.assistant!,
+      language: state.language!,
+      level: state.level!,
+      architecture: state.architecture!,
+      projectType: state.projectType!
     };
 
-    console.log(chalk.cyan('\n📋 Configuration:'));
-    console.log(`   Assistant:    ${chalk.white(assistant)}`);
-    console.log(`   Language:     ${chalk.white(language)}`);
-    console.log(`   Project Type: ${chalk.white(projectType)}`);
-    console.log(`   Level:        ${chalk.white(level)}`);
-    console.log(`   Architecture: ${chalk.white(architecture)}`);
-
-    // Confirm
-    const shouldGenerate = await confirm({
-      message: 'Generate configuration?',
-      default: true
-    });
-
-    if (!shouldGenerate) {
-      console.log(chalk.gray('\nCancelled.'));
-      return;
-    }
-
-    // Generate
     spinner.start('Generating configuration...');
 
     const result = await generator.generate({
       projectPath,
       selection,
+      customGuidelineIds: state.selectedGuidelineIds,
       dryRun: options.dryRun
     });
 
@@ -244,7 +216,7 @@ export async function initCommand(options: InitOptions) {
 
     if (!options.dryRun) {
       console.log(chalk.cyan('\n🚀 Next steps:'));
-      printNextSteps(assistant);
+      printNextSteps(state.assistant!);
     }
 
   } catch (error) {
@@ -254,45 +226,268 @@ export async function initCommand(options: InitOptions) {
   }
 }
 
-async function selectLanguage(): Promise<Language> {
-  return await select({
-    message: 'Select language:',
-    choices: LANGUAGES.map(l => ({
-      value: l.value,
-      name: l.name
-    }))
-  }) as Language;
+async function handleLanguageStep(wizard: WizardStateManager, detectedLanguage?: Language): Promise<void> {
+  let language: Language;
+
+  if (detectedLanguage && detectedLanguage !== 'unknown') {
+    const useDetected = await confirm({
+      message: `Use detected language: ${chalk.cyan(detectedLanguage)}?`,
+      default: true
+    });
+
+    if (useDetected) {
+      language = detectedLanguage;
+    } else {
+      language = await select({
+        message: 'Select language:',
+        choices: LANGUAGES.map(l => ({ value: l.value, name: l.name }))
+      }) as Language;
+    }
+  } else {
+    language = await select({
+      message: 'Select language:',
+      choices: LANGUAGES.map(l => ({ value: l.value, name: l.name }))
+    }) as Language;
+  }
+
+  wizard.updateState({ language });
 }
 
-function getSmartDefaults(projectType: ProjectType): { level: InstructionLevel; architecture: ArchitectureType } {
-  switch (projectType) {
-    case 'cli':
-    case 'library':
-      return { level: 'standard', architecture: 'modular-monolith' };
-    case 'web':
-      return { level: 'standard', architecture: 'layered' };
-    case 'api':
-      return { level: 'expert', architecture: 'modular-monolith' };
-    case 'desktop':
-    case 'mobile':
-      return { level: 'standard', architecture: 'layered' };
-    case 'other':
-    default:
-      return { level: 'standard', architecture: 'modular-monolith' };
+async function handleProjectTypeStep(wizard: WizardStateManager): Promise<string> {
+  const choices = addBackOption(
+    PROJECT_TYPES.map(pt => ({
+      value: pt.value,
+      name: pt.name,
+      description: pt.description
+    })),
+    wizard.canGoBack()
+  );
+
+  const projectType = await select({
+    message: 'What type of project is this?',
+    choices
+  }) as ProjectType | typeof BACK_VALUE;
+
+  if (projectType !== BACK_VALUE) {
+    wizard.updateState({ projectType: projectType as ProjectType });
   }
+
+  return projectType;
+}
+
+async function handleAssistantStep(wizard: WizardStateManager, options: InitOptions): Promise<string> {
+  if (options.assistant) {
+    wizard.updateState({ assistant: options.assistant as AIAssistant });
+    return options.assistant;
+  }
+
+  const choices = addBackOption(
+    ASSISTANTS.map(a => ({
+      value: a.value,
+      name: a.name,
+      description: a.description
+    })),
+    wizard.canGoBack()
+  );
+
+  const assistant = await select({
+    message: 'Which AI assistant?',
+    choices
+  }) as AIAssistant | typeof BACK_VALUE;
+
+  if (assistant !== BACK_VALUE) {
+    wizard.updateState({ assistant: assistant as AIAssistant });
+  }
+
+  return assistant;
+}
+
+async function handleSetupTypeStep(wizard: WizardStateManager): Promise<string> {
+  const choices = addBackOption(
+    [
+      { value: 'quick', name: 'Quick Setup', description: 'Recommended settings for common use cases' },
+      { value: 'custom', name: 'Custom', description: 'Select individual guidelines' }
+    ],
+    wizard.canGoBack()
+  );
+
+  const setupType = await select({
+    message: 'Setup type?',
+    choices
+  }) as 'quick' | 'custom' | typeof BACK_VALUE;
+
+  if (setupType !== BACK_VALUE) {
+    wizard.updateState({ setupType: setupType as 'quick' | 'custom' });
+  }
+
+  return setupType;
+}
+
+async function handleArchitectureStep(wizard: WizardStateManager, options: InitOptions): Promise<string> {
+  if (options.architecture) {
+    wizard.updateState({ architecture: options.architecture as ArchitectureType });
+    return options.architecture;
+  }
+
+  const choices = addBackOption(
+    ARCHITECTURES.map(a => ({
+      value: a.value,
+      name: a.name,
+      description: a.description
+    })),
+    wizard.canGoBack()
+  );
+
+  const architecture = await select({
+    message: 'Architecture pattern?',
+    choices,
+    default: 'modular-monolith'
+  }) as ArchitectureType | typeof BACK_VALUE;
+
+  if (architecture !== BACK_VALUE) {
+    wizard.updateState({ architecture: architecture as ArchitectureType });
+  }
+
+  return architecture;
+}
+
+async function handleLevelStep(wizard: WizardStateManager, options: InitOptions): Promise<string> {
+  const state = wizard.getState();
+
+  if (options.level) {
+    wizard.updateState({ level: options.level as InstructionLevel });
+    return options.level;
+  }
+
+  const levelsWithMetrics = await getLevelsWithMetrics(
+    state.language!,
+    state.architecture!,
+    state.assistant!
+  );
+
+  const choices = addBackOption(
+    levelsWithMetrics.map(l => ({
+      value: l.value,
+      name: l.name,
+      description: l.description
+    })),
+    wizard.canGoBack()
+  );
+
+  const level = await select({
+    message: 'Instruction detail level?',
+    choices,
+    default: 'standard'
+  }) as InstructionLevel | typeof BACK_VALUE;
+
+  if (level !== BACK_VALUE) {
+    wizard.updateState({ level: level as InstructionLevel });
+  }
+
+  return level;
+}
+
+async function handleGuidelinesStep(wizard: WizardStateManager): Promise<string> {
+  const state = wizard.getState();
+
+  const selectedIds = await selectGuidelines(
+    state.language!,
+    state.level!,
+    state.architecture!,
+    wizard.canGoBack()
+  );
+
+  if (selectedIds === BACK_VALUE) {
+    return BACK_VALUE;
+  }
+
+  wizard.updateState({ selectedGuidelineIds: selectedIds as string[] });
+  return 'OK';
+}
+
+async function handleSummaryStep(wizard: WizardStateManager): Promise<boolean | string> {
+  const state = wizard.getState();
+  const loader = await GuidelineLoader.create();
+
+  const guidelineIds = state.selectedGuidelineIds || loader.getGuidelinesForProfile(
+    state.assistant!,
+    state.language!,
+    state.level!,
+    state.architecture!
+  );
+
+  const metrics = loader.getMetrics(guidelineIds);
+
+  console.log('\n' + createSummaryBox('📋 Configuration Summary', [
+    { label: 'Assistant', value: state.assistant! },
+    { label: 'Language', value: state.language! },
+    { label: 'Project Type', value: state.projectType! },
+    { label: 'Architecture', value: state.architecture! },
+    { label: 'Level', value: state.level! }
+  ]));
+
+  console.log('\n' + createMetricsBox([
+    { label: 'guidelines', value: metrics.guidelineCount },
+    { label: 'hooks', value: metrics.hooksCount },
+    { label: 'sub-agents', value: metrics.subAgentsCount },
+    { label: 'estimated size', value: metrics.estimatedSize }
+  ]));
+
+  console.log('');
+
+  const shouldGenerate = await select({
+    message: 'Proceed with generation?',
+    choices: [
+      { value: 'yes', name: 'Yes, generate configuration', description: 'Create config files' },
+      ...(wizard.canGoBack() ? [{ value: BACK_VALUE, name: '← Back', description: 'Modify settings' }] : []),
+      { value: 'no', name: 'Cancel', description: 'Exit without generating' }
+    ]
+  });
+
+  if (shouldGenerate === 'yes') {
+    return true;
+  } else if (shouldGenerate === BACK_VALUE) {
+    return BACK_VALUE;
+  } else {
+    return false;
+  }
+}
+
+async function getLevelsWithMetrics(language: Language, architecture: ArchitectureType, assistant: AIAssistant): Promise<{ value: InstructionLevel; name: string; description: string }[]> {
+  const loader = await GuidelineLoader.create();
+  const levels: InstructionLevel[] = ['basic', 'standard', 'expert', 'full'];
+
+  return levels.map(level => {
+    const guidelineIds = loader.getGuidelinesForProfile(assistant, language, level, architecture);
+    const metrics = loader.getMetrics(guidelineIds);
+
+    const descriptions: Record<InstructionLevel, string> = {
+      basic: 'Essential guidelines for quick projects',
+      standard: 'Production-ready practices',
+      expert: 'Advanced patterns for scaling',
+      full: 'Everything - all guidelines'
+    };
+
+    return {
+      value: level,
+      name: `${level.charAt(0).toUpperCase() + level.slice(1)}`,
+      description: `${descriptions[level]} (${metrics.guidelineCount} guidelines, ${metrics.hooksCount} hooks, ${metrics.subAgentsCount} agents, ${metrics.estimatedSize})`
+    };
+  });
 }
 
 function printNextSteps(assistant: AIAssistant) {
   switch (assistant) {
     case 'claude-code':
-      console.log(chalk.gray('   1. Review claude.md'));
-      console.log(chalk.gray('   2. Open project in Claude Code'));
-      console.log(chalk.gray('   3. Start coding with AI assistance'));
+      console.log(chalk.gray('   1. Review .claude/CLAUDE.md'));
+      console.log(chalk.gray('   2. Check .claude/settings.json for hooks'));
+      console.log(chalk.gray('   3. Review sub-agents in .claude/agents/'));
+      console.log(chalk.gray('   4. Open project in Claude Code'));
       break;
     case 'copilot':
       console.log(chalk.gray('   1. Review .github/copilot-instructions.md'));
-      console.log(chalk.gray('   2. Open project in VS Code'));
-      console.log(chalk.gray('   3. Copilot will use these instructions'));
+      console.log(chalk.gray('   2. Check .github/instructions/ for details'));
+      console.log(chalk.gray('   3. Open project in VS Code'));
       break;
     case 'gemini':
       console.log(chalk.gray('   1. Review .gemini/instructions.md'));
@@ -306,5 +501,51 @@ function printNextSteps(assistant: AIAssistant) {
       console.log(chalk.gray('   1. Review .codex/instructions.md'));
       console.log(chalk.gray('   2. Configure Codex integration'));
       break;
+  }
+  console.log(chalk.gray('   \n   Also check AGENTS.md for universal instructions'));
+}
+
+async function checkForUpdatesInBackground() {
+  try {
+    const loader = await GuidelineLoader.create();
+    const currentVersion = loader.getVersion();
+
+    if (currentVersion === 'embedded' || currentVersion === 'unknown') {
+      return;
+    }
+
+    const response = await fetch(GITHUB_RELEASES_URL, {
+      headers: {
+        'Accept': 'application/vnd.github+json',
+        'User-Agent': CONFIG.USER_AGENT
+      }
+    });
+
+    if (!response.ok) return;
+
+    const data = await response.json() as { tag_name: string };
+    const latestVersion = data.tag_name.replace(/^v/, '');
+
+    const currentParts = currentVersion.split('.').map(Number);
+    const latestParts = latestVersion.split('.').map(Number);
+
+    let needsUpdate = false;
+    for (let i = 0; i < Math.max(currentParts.length, latestParts.length); i++) {
+      const curr = currentParts[i] || 0;
+      const lat = latestParts[i] || 0;
+
+      if (lat > curr) {
+        needsUpdate = true;
+        break;
+      }
+      if (lat < curr) break;
+    }
+
+    if (needsUpdate) {
+      console.log(chalk.yellow(`\n   📦 New guidelines available: v${latestVersion}`));
+      console.log(chalk.gray(`   Run ${chalk.white('aicgen update')} to download\n`));
+    }
+  } catch {
+    // Silently fail if can't check for updates
   }
 }

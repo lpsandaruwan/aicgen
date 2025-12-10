@@ -1,0 +1,48 @@
+LARGE VERSION (for banner):
+
+        ◉                              ╭──────────╮
+       ◉  ╲                           │ ─────    │
+      ◉    ╲   ──►   ◆   ─►   │ ────     │
+     ◉      ╱                      │ ─────    │
+    ◉      ╱                       │ ────     │
+   ◉                                  ╰──────────╯
+                                            ✓
+           aicgen ─ AI Config Generator
+
+  Neural Network Nodes → Flow → Config Document
+
+
+MEDIUM VERSION (compact):
+
+      ◉
+     ◉  ╲        ╭────╮
+    ◉    ─►  ◆  ─► │ ── │
+   ◉    ╱        ╰────╯
+  ◉                 ✓
+
+
+SMALL VERSION (inline):
+
+  ◉─► ◆ ─► ▢
+
+
+MINIMAL VERSION (status/loading):
+
+ ◉ ▶ ▢
+
+
+COLOR MAPPING (for terminal):
+- ● (circles/nodes) = CYAN
+- ╲╱ (connections) = CYAN→PURPLE gradient (use transition colors)
+- ▶▶ (flow arrows) = PURPLE
+- ╭─╮ (document box) = PURPLE
+- ≡≡≡ (code lines) = WHITE/GRAY
+- ✓ (checkmark) = GREEN
+
+
+ANIMATED VERSION CONCEPT:
+Frame 1: ●    ▶   ▢
+Frame 2: ●   ▶▶   ▢
+Frame 3: ●  ▶▶▶   ▢
+Frame 4: ●   ▶▶   ▣  (filled document)
+Frame 5: ●    ▶   ✓  (checkmark appears)

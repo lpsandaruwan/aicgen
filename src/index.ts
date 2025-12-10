@@ -2,13 +2,22 @@
 import { Command } from 'commander';
 import { initCommand } from './commands/init.js';
 import { statsCommand } from './commands/stats.js';
+import { updateCommand } from './commands/update.js';
+import { addGuidelineCommand } from './commands/add-guideline.js';
+import { showBanner } from './utils/banner.js';
+import { CONFIG } from './config.js';
 
 const program = new Command();
 
+// Show banner before help or when no command given
+if (process.argv.length === 2 || process.argv.includes('-h') || process.argv.includes('--help')) {
+  showBanner();
+}
+
 program
-  .name('aicgen')
+  .name(CONFIG.APP_NAME)
   .description('Generate tailored coding guidelines for AI assistants')
-  .version('0.1.0');
+  .version(CONFIG.APP_VERSION);
 
 program
   .command('init')
@@ -24,5 +33,16 @@ program
   .command('stats')
   .description('Show statistics about available guidelines')
   .action(statsCommand);
+
+program
+  .command('update')
+  .description('Update guidelines from GitHub')
+  .option('-f, --force', 'Force update even if already up to date')
+  .action(updateCommand);
+
+program
+  .command('add-guideline')
+  .description('Add a custom guideline interactively')
+  .action(addGuidelineCommand);
 
 program.parse();

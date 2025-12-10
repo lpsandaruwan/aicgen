@@ -1,17 +1,35 @@
-# aicgen - AI Config Generator
+<p align="center">
+  <img src="assets/logo.svg" width="200" alt="aicgen logo" />
+</p>
 
-Automatically generate intelligent, context-aware configurations for AI coding assistants (Claude Code, GitHub Copilot, Google Antigravity) with smart project analysis and beautiful interactive wizards.
+<h1 align="center">aicgen</h1>
+<p align="center">AI Config Generator</p>
+<p align="center">
+  <em>Enterprise-grade configuration generator for AI coding assistants</em>
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/version-0.1.0-cyan" alt="Version" />
+  <img src="https://img.shields.io/badge/license-MIT-purple" alt="License" />
+  <img src="https://img.shields.io/badge/bun-%3E%3D1.0.0-cyan" alt="Bun" />
+</p>
+
+---
+
+Automatically generate intelligent, context-aware configurations for AI coding assistants with smart project analysis, beautiful interactive wizards, and comprehensive guideline management.
 
 ## ✨ Features
 
-- **🎯 Multi-Assistant Support** - Claude Code, GitHub Copilot, Google Antigravity
-- **🧠 Smart Project Analysis** - Detects language, framework, database, team size
-- **📊 Intelligent Recommendations** - Suggests instruction level & architecture
-- **🎨 Beautiful Interactive Wizard** - Colored output, spinners, clear prompts
-- **⚡ Fast & Lightweight** - Built with Bun, compiles to standalone binaries
-- **🔧 Fully Configurable** - Interactive or automated with CLI flags
-- **📝 Context-Rich Instructions** - Generates detailed, project-specific guides
-- **🏗️ Architecture Support** - Modular Monolith, Microservices, Refactor patterns
+- **🎯 Multi-Assistant Support** - Claude Code, GitHub Copilot, Gemini, Antigravity, Codex
+- **📚 57+ Guidelines** - Organized into 12 categories (Language, Architecture, Testing, Security, etc.)
+- **🎨 Enterprise CLI Experience** - Beautiful ASCII logo, clear navigation, professional UI
+- **🔧 Multi-File Organization** - Category-based files with references, not monolithic configs
+- **⚡ Hooks & Sub-Agents** - Auto-generates Claude Code hooks and verification agents
+- **📊 Real-Time Metrics** - See guideline count, hooks, agents, and size before generating
+- **🌳 Smart Selection** - Tree-based guideline picker with category-level control
+- **🏗️ Architecture Support** - Layered, Modular Monolith, Microservices, Event-Driven, Hexagonal
+- **📦 Embedded Data** - All guidelines bundled in binary, no external file dependencies
+- **🎭 Universal Support** - Generates AGENTS.md following the universal standard
 
 ## 🚀 Quick Start
 
@@ -57,25 +75,33 @@ bun run build:binary
 bun run start init
 ```
 
-## 📊 Chunk System
+## 📚 Guideline System
 
-aicgen uses a modular **chunk-based architecture** with **53+ markdown chunks**:
+aicgen uses a **modular guideline architecture** with **57+ markdown guidelines** organized into **12 categories**:
 
 ```bash
-# View chunk statistics
+# View guideline statistics
 aicgen stats
 ```
 
-**Available Chunks:**
-- **Language**: TypeScript (8), Python (4)
-- **Architecture**: SOLID, Clean Architecture, DDD, Event-Driven, Serverless, GUI, Feature Toggles
-- **Patterns**: Enterprise patterns (6), Domain Logic, GoF patterns
-- **Best Practices**: Testing (3), Security (4), Performance (3), Code Style (2)
-- **DevOps**: CI/CD, Infrastructure as Code, Observability
-- **Database**: Schema design, Indexing, Design patterns
-- **API**: REST, Pagination, Versioning
+**Categories:**
+- **Language** - TypeScript, Python, Go, Rust, Java, C#, Ruby, JavaScript
+- **Architecture** - Layered, Modular Monolith, Microservices, Event-Driven, Hexagonal
+- **Testing** - Unit, Integration, E2E testing standards
+- **Security** - Authentication, Authorization, Input validation, Secrets management
+- **Performance** - Optimization, Caching, Database query optimization
+- **Database** - Schema design, Migrations, ORM patterns
+- **API Design** - REST, GraphQL, Versioning, Documentation
+- **Code Style** - Naming conventions, File organization, Comments
+- **Error Handling** - Exception patterns, Logging, Recovery strategies
+- **DevOps** - CI/CD, Docker, Infrastructure as Code
+- **Best Practices** - SOLID, DRY, Clean Code principles
+- **Design Patterns** - Creational, Structural, Behavioral patterns
 
-Each chunk is a focused markdown file (50-200 lines) covering a specific topic.
+Each guideline is a focused markdown file covering a specific topic, filtered by:
+- **Language** (typescript, python, go, etc.)
+- **Level** (basic, standard, expert, full)
+- **Architecture** (layered, modular-monolith, microservices, etc.)
 
 ## 🎮 Interactive Wizard
 
@@ -126,12 +152,14 @@ Each chunk is a focused markdown file (50-200 lines) covering a specific topic.
 
 ## 📚 Instruction Levels
 
-| Level | Lines | Best For | Includes |
-|-------|-------|----------|----------|
-| **Basic** | ~200 | Scripts, POCs, learning | Code style, error handling |
-| **Standard** | ~500 | MVPs, small teams (1-5) | + Testing, CI/CD, architecture basics |
-| **Expert** | ~1000 | Scaling products (5-20) | + Advanced patterns, deployment, monitoring |
-| **Full** | ~2000+ | Enterprise, complex systems | All available guidelines |
+| Level | Guidelines | Hooks | Agents | Size | Best For |
+|-------|-----------|-------|--------|------|----------|
+| **Basic** | ~12 | 1 | 1 | ~30 KB | Scripts, POCs, learning projects |
+| **Standard** | ~28 | 3 | 2 | ~70 KB | MVPs, small teams (1-5 devs) |
+| **Expert** | ~45 | 4 | 3 | ~110 KB | Scaling products, medium teams |
+| **Full** | ~57 | 4 | 3 | ~140 KB | Enterprise, complex systems |
+
+*Metrics vary based on language and architecture selection*
 
 ## 🏗️ Architecture Options
 
@@ -160,19 +188,49 @@ Options:
   -h, --help                  Display help
 ```
 
+**Auto-update Check:** The init command automatically checks for newer guideline versions from GitHub in the background.
+
+### `aicgen update`
+
+Download the latest guidelines from GitHub.
+
+```bash
+aicgen update [options]
+
+Options:
+  -f, --force                 Force update even if already up to date
+  -h, --help                  Display help
+```
+
+Downloads official guidelines to `~/.aicgen/cache/official/` which are automatically used by all future init commands.
+
+### `aicgen add-guideline`
+
+Add a custom guideline interactively.
+
+```bash
+aicgen add-guideline
+```
+
+Interactive wizard to create custom guidelines:
+- Select or create category
+- Define applicability (languages, levels, architectures)
+- Add content via editor, file import, or inline
+- Stored in `~/.aicgen/data/` with highest priority
+
 ### `aicgen stats`
 
-Show statistics about available chunks.
+Show statistics about available guidelines.
 
 ```bash
 aicgen stats
 ```
 
 Displays:
-- Total chunk count
-- Chunks by language
-- Chunks by instruction level
-- Chunks by architecture
+- Total guideline count
+- Guidelines by language
+- Guidelines by instruction level
+- Guidelines by architecture
 - Top tags
 
 ### Examples
@@ -197,48 +255,117 @@ aicgen init --dry-run
 aicgen init --force
 ```
 
+## ⚙️ Configuration
+
+### Default Behavior (No Configuration Needed!)
+
+**aicgen works out of the box** with official guidelines from `github.com/aicgen/guidelines`. Most users don't need any configuration.
+
+### Advanced Configuration (Optional)
+
+For enterprise users, testers, or those maintaining forks, you can override the GitHub repository:
+
+**Method 1: User Config File** (Recommended for persistent changes)
+
+Create `~/.aicgen/config.yml`:
+
+```yaml
+github:
+  owner: yourname
+  repo: custom-guidelines
+```
+
+**Method 2: Environment Variables** (For temporary overrides)
+
+```bash
+export AICGEN_GITHUB_OWNER=yourname
+export AICGEN_GITHUB_REPO=custom-guidelines
+aicgen update
+```
+
+**Priority:** Environment Variables > User Config File > Built-in Defaults
+
+See `.env.example` for all available options.
+
+### Guideline Priority System
+
+aicgen uses a hybrid data loading system with the following priority:
+
+1. **User Custom** (`~/.aicgen/data/`) - Highest priority
+   - Custom guidelines created via `aicgen add-guideline`
+   - Manually added markdown files
+   - Custom mappings in `custom-mappings.yml`
+
+2. **Official Cache** (`~/.aicgen/cache/official/`) - Medium priority
+   - Downloaded from GitHub via `aicgen update`
+   - Versioned guideline updates
+   - Automatically checked on `aicgen init`
+
+3. **Embedded** (Built into binary) - Fallback
+   - Bundled guidelines for offline use
+   - Always available, no network required
+
+### Directory Structure
+
+```
+~/.aicgen/
+├── data/                          # User custom data (highest priority)
+│   ├── custom-mappings.yml        # Custom guideline mappings
+│   └── guidelines/                # Custom guideline files
+│       └── category/
+│           └── guideline.md
+└── cache/
+    └── official/                  # GitHub downloads (medium priority)
+        ├── version.json           # Downloaded version info
+        ├── guideline-mappings.yml # Official mappings
+        └── guidelines/            # Official guideline files
+```
+
 ## 📁 Generated Files
 
 ### For Claude Code
 
 ```
 .claude/
-├── instructions.md        # Complete development guide (~500 lines)
-│   ├── Project Overview
-│   ├── Architecture: Modular Monolith
-│   ├── Code Guidelines (TypeScript specific)
-│   ├── Testing Strategy (Vitest)
-│   ├── Error Handling Patterns
-│   ├── Deployment & CI/CD
-│   └── Logging Best Practices
-│
-├── config.yml
-│   └── Project metadata & defaults
-│
-└── decisions.md
-    └── Architecture Decision Records
+├── CLAUDE.md                  # Main file with references to guidelines
+├── settings.json              # Hooks and permissions configuration
+├── guidelines/                # Category-based guideline files
+│   ├── language.md           # Language-specific patterns
+│   ├── architecture.md       # Architectural guidelines
+│   ├── testing.md            # Testing standards
+│   ├── security.md           # Security best practices
+│   ├── code-style.md         # Style conventions
+│   └── ...                   # Additional categories
+└── agents/                    # Verification sub-agents
+    ├── guideline-checker.md  # Checks code compliance
+    ├── architecture-reviewer.md
+    └── security-auditor.md
 ```
 
 ### For GitHub Copilot
 
 ```
 .github/
-├── copilot-instructions.md    # Repository-wide instructions
-└── instructions/              # Path-specific instructions
-    ├── backend.instructions.md
-    └── frontend.instructions.md
+├── copilot-instructions.md    # Main instructions with references
+└── instructions/              # Category-based instruction files
+    ├── language.instructions.md
+    ├── architecture.instructions.md
+    ├── testing.instructions.md
+    └── ...
 ```
 
-### For Google Antigravity
+### For Gemini / Antigravity / Codex
 
 ```
-.agent/
-├── rules/                     # Workspace-specific rules
-│   ├── coding-style.md
-│   ├── architecture.md
-│   └── testing.md
-└── workflows/                 # Saved prompts
-    └── setup-api.md
+.gemini/                       # or .agent/ or .codex/
+└── instructions.md            # All guidelines in single file
+```
+
+### Universal (All Tools)
+
+```
+AGENTS.md                      # Universal AI agent instructions
+                              # Follows the AGENTS.md standard
 ```
 
 ## 🔍 Project Detection

@@ -19,7 +19,12 @@
       "Bash(node --version:*)",
       "Bash(bun run embed:*)",
       "Bash(node scripts/embed-data.ts:*)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(yarn add:*)",
+      "Bash(node scripts/add-categories.ts:*)",
+      "Bash(yarn build)",
+      "Bash(yarn --version)",
+      "WebFetch(domain:atamel.dev)"
     ],
     "deny": [],
     "ask": []
