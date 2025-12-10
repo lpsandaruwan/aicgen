@@ -2,7 +2,7 @@ import ora from 'ora';
 import chalk from 'chalk';
 import { homedir } from 'os';
 import { join } from 'path';
-import { mkdir, writeFile, rm } from 'fs/promises';
+import { mkdir, writeFile, rm, readdir, cp } from 'fs/promises';
 import { GuidelineLoader } from '../services/guideline-loader.js';
 import { createSummaryBox } from '../utils/formatting.js';
 import { CONFIG, GITHUB_RELEASES_URL } from '../config.js';
@@ -142,35 +142,62 @@ async function fetchLatestVersion(): Promise<VersionInfo> {
 }
 
 async function downloadGuidelines(url: string, targetDir: string): Promise<void> {
-  // Download tarball
   const response = await fetch(url);
 
   if (!response.ok) {
     throw new Error(`Failed to download: ${response.status} ${response.statusText}`);
   }
 
-  // TODO: Implement actual tarball extraction when we have the real repo
-  // const tarballBuffer = Buffer.from(await response.arrayBuffer());
-  // For now, write a placeholder structure
+  const tarballBuffer = Buffer.from(await response.arrayBuffer());
 
-  // Create placeholder structure
-  await writeFile(
-    join(targetDir, 'README.md'),
-    '# aicgen Guidelines\n\nOfficial guidelines downloaded from GitHub.\n',
-    'utf-8'
-  );
+  // Extract tarball to temp directory
+  const tempDir = join(targetDir, '.temp-extract');
+  await mkdir(tempDir, { recursive: true });
 
-  // Create placeholder guideline-mappings.yml
-  await writeFile(
-    join(targetDir, 'guideline-mappings.yml'),
-    '# Guidelines will be populated from GitHub repo\n',
-    'utf-8'
-  );
+  try {
+    // Write tarball to temp file
+    const tarballPath = join(tempDir, 'archive.tar.gz');
+    await writeFile(tarballPath, tarballBuffer);
 
-  await mkdir(join(targetDir, 'guidelines'), { recursive: true });
+    // Extract tarball using decompress (Windows-compatible)
+    const decompress = (await import('decompress')).default;
+    await decompress(tarballPath, tempDir);
 
-  console.log(chalk.yellow('\n⚠️  Note: Actual tarball extraction not yet implemented'));
-  console.log(chalk.gray('   Placeholder files created for testing'));
+    // GitHub tarballs contain a root directory like "username-repo-commitsha"
+    // Find and copy contents from that directory
+    const entries = await readdir(tempDir);
+    const rootDir = entries.find(entry => entry.startsWith('lpsandaruwan-aicgen-docs-'));
+
+    if (!rootDir) {
+      throw new Error('Could not find extracted repository directory');
+    }
+
+    const extractedPath = join(tempDir, rootDir);
+
+    // Copy contents to target directory
+    // Files should go into targetDir/guidelines/ subdirectory
+    const guidelinesTarget = join(targetDir, 'guidelines');
+    await mkdir(guidelinesTarget, { recursive: true });
+
+    // Copy extracted contents to guidelines subdirectory
+    const extractedEntries = await readdir(extractedPath, { withFileTypes: true });
+    for (const entry of extractedEntries) {
+      const sourcePath = join(extractedPath, entry.name);
+      const targetPath = join(guidelinesTarget, entry.name);
+
+      if (entry.name === 'guideline-mappings.yml') {
+        // Copy mappings file to root of targetDir, not into guidelines/
+        await cp(sourcePath, join(targetDir, entry.name));
+      } else if (entry.isDirectory() || entry.name.endsWith('.md')) {
+        // Copy directories and markdown files into guidelines/
+        await cp(sourcePath, targetPath, { recursive: true });
+      }
+    }
+
+  } finally {
+    // Clean up temp directory
+    await rm(tempDir, { recursive: true, force: true });
+  }
 }
 
 function needsUpdate(current: string, latest: string): boolean {
