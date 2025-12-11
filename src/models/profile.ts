@@ -7,7 +7,8 @@ export type ArchitectureType =
   | 'microservices'
   | 'event-driven'
   | 'hexagonal'
-  | 'refactor';
+  | 'refactor'
+  | 'other';
 
 export interface ProfileSelection {
   assistant: AIAssistant;

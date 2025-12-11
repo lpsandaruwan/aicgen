@@ -35,7 +35,8 @@ const ARCHITECTURES: { value: ArchitectureType; name: string }[] = [
   { value: 'microservices', name: 'Microservices' },
   { value: 'event-driven', name: 'Event-Driven' },
   { value: 'hexagonal', name: 'Hexagonal' },
-  { value: 'refactor', name: 'Refactor / Legacy' }
+  { value: 'refactor', name: 'Refactor / Legacy' },
+  { value: 'other', name: 'Other / None' }
 ];
 
 export async function addGuidelineCommand() {

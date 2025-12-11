@@ -55,7 +55,8 @@ const ARCHITECTURES: { value: ArchitectureType; name: string; description: strin
   { value: 'microservices', name: 'Microservices', description: 'Independent services with separate deploys' },
   { value: 'event-driven', name: 'Event-Driven', description: 'Event sourcing, CQRS, message queues' },
   { value: 'hexagonal', name: 'Hexagonal (Ports & Adapters)', description: 'Business logic isolated from infrastructure' },
-  { value: 'refactor', name: 'Refactor / Legacy', description: 'Improving existing codebase gradually' }
+  { value: 'refactor', name: 'Refactor / Legacy', description: 'Improving existing codebase gradually' },
+  { value: 'other', name: 'Other / None', description: 'Scripts, APIs, frontends, or no specific architecture' }
 ];
 
 export async function initCommand(options: InitOptions) {
