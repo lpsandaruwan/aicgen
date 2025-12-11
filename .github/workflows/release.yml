@@ -1,0 +1,166 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    name: Build & Release
+    runs-on: windows-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Install Dependencies
+        run: bun install
+
+      # ----------------------------------------------------------------
+      # BUILD BINARIES
+      # ----------------------------------------------------------------
+      - name: Build All Binaries
+        run: bun run build:all
+
+      # ----------------------------------------------------------------
+      # WINDOWS PACKAGING (NSIS)
+      # ----------------------------------------------------------------
+      - name: Setup NSIS
+        run: |
+          choco install nsis
+        shell: powershell
+
+      - name: Create Windows Installer
+        run: |
+          makensis packaging/windows/setup.nsi
+        shell: cmd
+
+      # ----------------------------------------------------------------
+      # LINUX PACKAGING (DEB)
+      # ----------------------------------------------------------------
+      # Note: Basic .deb creation using simple tools or just tarball for now since we are on Windows runner.
+      # Switching to ubuntu-latest for a multi-job setup is better for cross-platform, but sticking to one job for simplicity first if possible.
+      # HOWEVER, creates deb on Windows is hard.
+      # LET'S SPLIT JOBS. This is better practice.
+
+  # ----------------------------------------------------------------
+  # JOB: BUILD WINDOWS
+  # ----------------------------------------------------------------
+  release-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v1
+      
+      - name: Build Windows Binary
+        run: |
+          bun install
+          bun run build:binary:windows
+          
+      - name: Create Installer (NSIS)
+        run: |
+          choco install nsis
+          makensis packaging/windows/setup.nsi
+          
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-installer
+          path: dist/aicgen-setup-x64.exe
+
+  # ----------------------------------------------------------------
+  # JOB: BUILD LINUX
+  # ----------------------------------------------------------------
+  release-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v1
+      
+      - name: Build Linux Binary
+        run: |
+          bun install
+          bun run build:binary:linux
+          
+      - name: Create Deb Package
+        run: |
+          mkdir -p dist/deb/usr/bin
+          cp dist/aicgen-linux dist/deb/usr/bin/aicgen
+          chmod +x dist/deb/usr/bin/aicgen
+          
+          mkdir -p dist/deb/DEBIAN
+          cp packaging/linux/control dist/deb/DEBIAN/control
+          
+          dpkg-deb --build dist/deb dist/aicgen_amd64.deb
+          
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-package
+          path: dist/aicgen_amd64.deb
+
+  # ----------------------------------------------------------------
+  # JOB: BUILD MACOS
+  # ----------------------------------------------------------------
+  release-macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v1
+      
+      - name: Build macOS Binary
+        run: |
+          bun install
+          bun run build:binary:macos
+          
+      - name: Create PKG Installer
+        run: |
+          # Structure
+          mkdir -p dist/pkg/usr/local/bin
+          cp dist/aicgen-macos dist/pkg/usr/local/bin/aicgen
+          chmod +x dist/pkg/usr/local/bin/aicgen
+          
+          # Build PKG
+          pkgbuild --root dist/pkg \
+            --identifier com.lpsandaruwan.aicgen \
+            --version ${{ github.ref_name }} \
+            --install-location / \
+            --scripts packaging/macos/scripts \
+            dist/aicgen.pkg
+            
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-installer
+          path: dist/aicgen.pkg
+
+  # ----------------------------------------------------------------
+  # JOB: PUBLISH RELEASE
+  # ----------------------------------------------------------------
+  publish-release:
+    needs: [release-windows, release-linux, release-macos]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+      
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            windows-installer/aicgen-setup-x64.exe
+            linux-package/aicgen_amd64.deb
+            macos-installer/aicgen.pkg
+          draft: false
+          prerelease: false
+          generate_release_notes: true

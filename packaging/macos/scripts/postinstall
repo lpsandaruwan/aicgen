@@ -1,0 +1,12 @@
+#!/bin/bash
+# MacOS Post-install script
+
+# Ensure /usr/local/bin exists
+if [ ! -d "/usr/local/bin" ]; then
+    mkdir -p "/usr/local/bin"
+fi
+
+# Link is handled by pkgbuild usually, but we can double check permission
+chmod +x "/usr/local/bin/aicgen"
+
+exit 0
