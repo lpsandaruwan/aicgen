@@ -15,7 +15,7 @@ console.log(`Building binary for ${platform} with version ${version}...`);
 
 const buildConfigs: Record<string, string[]> = {
   current: ['build', 'src/index.ts', '--compile', '--outfile', 'dist/aicgen'],
-  windows: ['build', 'src/index.ts', '--compile', '--outfile', 'dist/aicgen.exe'],
+  windows: ['build', 'src/index.ts', '--compile', '--outfile', 'dist/aicgen.exe', '--target=bun-windows-x64'],
   linux: ['build', 'src/index.ts', '--compile', '--outfile', 'dist/aicgen-linux', '--target=bun-linux-x64'],
   macos: ['build', 'src/index.ts', '--compile', '--outfile', 'dist/aicgen-macos', '--target=bun-darwin-arm64']
 };

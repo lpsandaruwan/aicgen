@@ -5,7 +5,7 @@
 Name "aicgen"
 OutFile "..\..\dist\aicgen-setup-x64.exe"
 Unicode True
-InstallDir "$PROGRAMFILES\aicgen"
+InstallDir "$PROGRAMFILES64\aicgen"
 InstallDirRegKey HKCU "Software\aicgen" ""
 RequestExecutionLevel admin
 
