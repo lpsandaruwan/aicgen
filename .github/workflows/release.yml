@@ -8,52 +8,18 @@ on:
 permissions:
   contents: write
 
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+  id-token: write
+
 jobs:
-  build-and-release:
-    name: Build & Release
-    runs-on: windows-latest
-    
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          submodules: true
-
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v1
-        with:
-          bun-version: latest
-
-      - name: Install Dependencies
-        run: bun install
-
-      # ----------------------------------------------------------------
-      # BUILD BINARIES
-      # ----------------------------------------------------------------
-      - name: Build All Binaries
-        run: bun run build:all
-
-      # ----------------------------------------------------------------
-      # WINDOWS PACKAGING (NSIS)
-      # ----------------------------------------------------------------
-      - name: Setup NSIS
-        run: |
-          choco install nsis
-        shell: powershell
-
-      - name: Create Windows Installer
-        run: |
-          makensis packaging/windows/setup.nsi
-        shell: cmd
-
-      # ----------------------------------------------------------------
-      # LINUX PACKAGING (DEB)
-      # ----------------------------------------------------------------
-      # Note: Basic .deb creation using simple tools or just tarball for now since we are on Windows runner.
-      # Switching to ubuntu-latest for a multi-job setup is better for cross-platform, but sticking to one job for simplicity first if possible.
-      # HOWEVER, creates deb on Windows is hard.
-      # LET'S SPLIT JOBS. This is better practice.
-
   # ----------------------------------------------------------------
   # JOB: BUILD WINDOWS
   # ----------------------------------------------------------------
@@ -61,6 +27,9 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: true
+          
       - uses: oven-sh/setup-bun@v1
       
       - name: Build Windows Binary
@@ -86,6 +55,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: true
+
       - uses: oven-sh/setup-bun@v1
       
       - name: Build Linux Binary
@@ -117,6 +89,9 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: true
+
       - uses: oven-sh/setup-bun@v1
       
       - name: Build macOS Binary
@@ -144,6 +119,32 @@ jobs:
         with:
           name: macos-installer
           path: dist/aicgen.pkg
+
+  # ----------------------------------------------------------------
+  # JOB: PUBLISH NPM
+  # ----------------------------------------------------------------
+  publish-npm:
+    needs: [release-windows, release-linux, release-macos]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - uses: oven-sh/setup-bun@v1
+  
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Build and Publish
+        run: |
+          bun install
+          bun run build
+          npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
   # ----------------------------------------------------------------
   # JOB: PUBLISH RELEASE
