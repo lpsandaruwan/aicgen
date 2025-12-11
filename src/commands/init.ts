@@ -11,6 +11,9 @@ import { createSummaryBox, createMetricsBox } from '../utils/formatting.js';
 import { selectGuidelines } from './guideline-selector.js';
 import { CONFIG, GITHUB_RELEASES_URL } from '../config.js';
 import { ensureDataInitialized } from '../services/first-run-init.js';
+import { CredentialManager } from '../services/ai/credential-manager.js';
+import { AIAnalysisService } from '../services/ai/analysis-service.js';
+import { ProjectContextGatherer } from '../services/ai/context-gatherer.js';
 
 interface InitOptions {
   assistant?: string;
@@ -91,6 +94,9 @@ export async function initCommand(options: InitOptions) {
       { label: 'Name', value: detected.name },
       { label: 'Language', value: detected.language !== 'unknown' ? detected.language : 'Not detected' }
     ]));
+
+    // AI Analysis Integration
+    await handleAIAnalysis(wizard, projectPath);
 
     // Check for existing config
     if (detected.hasExistingConfig && !options.force) {
@@ -247,6 +253,8 @@ export async function initCommand(options: InitOptions) {
 async function handleLanguageStep(wizard: WizardStateManager, detectedLanguage?: Language): Promise<void> {
   let language: Language;
 
+  if (wizard.getState().language) return;
+
   if (detectedLanguage && detectedLanguage !== 'unknown') {
     const useDetected = await confirm({
       message: `Use detected language: ${chalk.cyan(detectedLanguage)}?`,
@@ -272,6 +280,9 @@ async function handleLanguageStep(wizard: WizardStateManager, detectedLanguage?:
 }
 
 async function handleProjectTypeStep(wizard: WizardStateManager): Promise<string> {
+  const state = wizard.getState();
+  if (state.projectType) return state.projectType;
+
   const choices = addBackOption(
     PROJECT_TYPES.map(pt => ({
       value: pt.value,
@@ -294,6 +305,9 @@ async function handleProjectTypeStep(wizard: WizardStateManager): Promise<string
 }
 
 async function handleAssistantStep(wizard: WizardStateManager, options: InitOptions): Promise<string> {
+  const state = wizard.getState();
+  if (state.assistant) return state.assistant;
+
   if (options.assistant) {
     wizard.updateState({ assistant: options.assistant as AIAssistant });
     return options.assistant;
@@ -342,6 +356,9 @@ async function handleSetupTypeStep(wizard: WizardStateManager): Promise<string> 
 }
 
 async function handleArchitectureStep(wizard: WizardStateManager, options: InitOptions): Promise<string> {
+  const state = wizard.getState();
+  if (state.architecture) return state.architecture;
+
   if (options.architecture) {
     wizard.updateState({ architecture: options.architecture as ArchitectureType });
     return options.architecture;
@@ -580,4 +597,69 @@ async function checkForUpdatesInBackground() {
   } catch {
     // Silently fail if can't check for updates
   }
+}
+
+async function handleAIAnalysis(wizard: WizardStateManager, projectPath: string) {
+    const credManager = new CredentialManager();
+    const providers = await credManager.getAvailableProviders();
+
+    if (providers.length === 0) return;
+
+    const useAI = await confirm({
+        message: '✨ AI credentials detected. Analyze project structure with AI?',
+        default: true
+    });
+
+    if (!useAI) return;
+
+    let provider = providers[0];
+    if (providers.length > 1) {
+        provider = await select({
+            message: 'Select AI provider:',
+            choices: providers.map(p => ({ value: p, name: p.charAt(0).toUpperCase() + p.slice(1) }))
+        }) as any;
+    }
+
+    const spinner = ora(`Consulting ${provider}...`).start();
+
+    try {
+        const gatherer = new ProjectContextGatherer();
+        const context = await gatherer.gather(projectPath);
+
+        spinner.text = 'Analyzing project structure...';
+
+        const analyzer = new AIAnalysisService();
+        const analysis = await analyzer.analyzeProject(provider, context);
+
+        spinner.succeed('Analysis complete');
+
+        // Show suggestions
+        console.log(createSummaryBox('🤖 AI Suggestions', [
+            { label: 'Language', value: analysis.language },
+            { label: 'Type', value: analysis.projectType },
+            { label: 'Architecture', value: analysis.architecture || 'None' },
+            { label: 'Confidence', value: `${Math.round(analysis.confidence * 100)}%` },
+            { label: 'Reasoning', value: analysis.reasoning }
+        ]));
+
+        const apply = await confirm({
+            message: 'Apply these suggestions?',
+            default: true
+        });
+
+        if (apply) {
+            wizard.updateState({
+                language: analysis.language as Language,
+                projectType: analysis.projectType as ProjectType,
+                architecture: (analysis.architecture as ArchitectureType) || 'other',
+                // Map recommendedAssistant to our enum if possible, or leave blank to prompt
+                assistant: (analysis.recommendedAssistant as AIAssistant)
+            });
+        }
+
+    } catch (error) {
+        spinner.fail('AI Analysis failed');
+        console.error(chalk.red((error as Error).message));
+        // Continue fall-through to manual wizard
+    }
 }

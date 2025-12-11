@@ -35,7 +35,8 @@
       "Bash(curl:*)",
       "Bash(cat:*)",
       "Bash(bun run build:binary:windows:*)",
-      "Bash(yarn remove:*)"
+      "Bash(yarn remove:*)",
+      "Bash(bun pm ls:*)"
     ],
     "deny": [],
     "ask": []
