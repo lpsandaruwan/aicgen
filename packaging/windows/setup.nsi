@@ -9,6 +9,18 @@ InstallDir "$PROGRAMFILES64\aicgen"
 InstallDirRegKey HKCU "Software\aicgen" ""
 RequestExecutionLevel admin
 
+; Version Information
+VIProductVersion "1.0.0.0"
+VIAddVersionKey "ProductName" "aicgen"
+VIAddVersionKey "CompanyName" "lpsandaruwan"
+VIAddVersionKey "LegalCopyright" "© 2025 lpsandaruwan"
+VIAddVersionKey "FileDescription" "AI Config Generator Installer"
+VIAddVersionKey "FileVersion" "1.0.0.0"
+
+; Icons (Uncomment if .ico files are present in packaging/windows)
+; !define MUI_ICON "install.ico"
+; !define MUI_UNICON "uninstall.ico"
+
 ; UI Interface
 !define MUI_ABORTWARNING
 !insertmacro MUI_PAGE_WELCOME
@@ -38,10 +50,16 @@ Section "aicgen (required)" SecCore
   ; Write Uninstaller
   WriteUninstaller "$INSTDIR\uninstall.exe"
   
+  ; Start Menu Shortcuts
+  CreateDirectory "$SMPROGRAMS\aicgen"
+  CreateShortcut "$SMPROGRAMS\aicgen\aicgen.lnk" "$INSTDIR\aicgen.exe"
+  CreateShortcut "$SMPROGRAMS\aicgen\Uninstall.lnk" "$INSTDIR\uninstall.exe"
+  
   ; Registry keys for Add/Remove programs
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\aicgen" "DisplayName" "aicgen"
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\aicgen" "UninstallString" '"$INSTDIR\uninstall.exe"'
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\aicgen" "Publisher" "lpsandaruwan"
+  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\aicgen" "DisplayVersion" "1.0.0"
   
   ; Add to PATH
   EnVar::SetHKLM
@@ -55,6 +73,11 @@ Section "Uninstall"
   Delete "$INSTDIR\LICENSE"
   Delete "$INSTDIR\README.md"
   Delete "$INSTDIR\uninstall.exe"
+  
+  ; Remove shortcuts
+  Delete "$SMPROGRAMS\aicgen\aicgen.lnk"
+  Delete "$SMPROGRAMS\aicgen\Uninstall.lnk"
+  RMDir "$SMPROGRAMS\aicgen"
   
   ; Remove install dir
   RMDir "$INSTDIR"
