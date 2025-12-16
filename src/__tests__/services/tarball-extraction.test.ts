@@ -90,17 +90,17 @@ describe('Tarball Extraction Configuration', () => {
   });
 
   describe('Version Management', () => {
-    test('should have valid semver format', () => {
+    test('should have valid version format', () => {
       const version = CONFIG.APP_VERSION;
-      // Valid semver pattern: X.Y.Z or X.Y.Z-prerelease
-      const semverPattern = /^\d+\.\d+\.\d+(-[a-z0-9.-]+)?$/i;
-      expect(semverPattern.test(version)).toBe(true);
+      // Valid 2-number version: X.Y or X.Y-prerelease (e.g., "1.0-beta")
+      const versionPattern = /^\d+\.\d+(-[a-z0-9]+)?$/i;
+      expect(versionPattern.test(version)).toBe(true);
     });
 
-    test('should not have invalid semver like 0.1.0b1', () => {
+    test('should not have invalid version patterns', () => {
       const version = CONFIG.APP_VERSION;
       // Should not match invalid patterns like "0.1.0b1" or "0.1b"
-      expect(version).not.toMatch(/\d+\.\d+b\d*/);
+      expect(version).not.toMatch(/\d+\.\d+\.\d+b\d*/);
       expect(version).not.toMatch(/\d+b$/);
     });
   });
