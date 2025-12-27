@@ -33,6 +33,35 @@ interface UserConfig {
     owner?: string;
     repo?: string;
   };
+  aiProviders?: {
+    preferredProvider?: 'claude' | 'openai' | 'gemini';
+    claude?: {
+      apiKey?: string;  // Obfuscated
+      model?: string;
+      enabled?: boolean;
+    };
+    openai?: {
+      apiKey?: string;  // Obfuscated
+      model?: string;
+      enabled?: boolean;
+    };
+    gemini?: {
+      apiKey?: string;  // Obfuscated
+      model?: string;
+      enabled?: boolean;
+    };
+  };
+  analysisCache?: {
+    enabled?: boolean;
+    ttlDays?: number;
+    maxSizeMB?: number;
+  };
+  analysisOptions?: {
+    samplingStrategy?: 'minimal' | 'balanced' | 'comprehensive';
+    includeTests?: boolean;
+    maxSampledFiles?: number;
+    maxTokens?: number;
+  };
 }
 
 function loadUserConfig(): UserConfig {
